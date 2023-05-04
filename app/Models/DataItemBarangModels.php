@@ -20,7 +20,7 @@ class DataItemBarangModels extends Model
         // "ib_qty_stok",
         "ib_qty_jual",
         "ib_qty_beli",
-        "ib_qty_sisa_bei",
+        // "ib_qty_sisa_bei",
         "ib_berat/ukuran",
         "ib_ktrg_berat/ukuran",
         "ib_foto",

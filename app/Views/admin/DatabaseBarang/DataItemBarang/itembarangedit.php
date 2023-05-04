@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Edit Data Kategori Barang &mdash; ARISYA</title>
+<title>Edit Data Item Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -55,7 +55,7 @@
                                 </div> -->
                                 <div class="form-group col-6">
                                     <label for="">Jumlah Item Barang Yang Sudah Dibeli (qty)</label>
-                                    <input id="" type="text" class="form-control hargajual" name="ib_qty_beli" placeholder="Masukan Jumlah Item Barang Yang Sudah Dibeli (qty)" required>
+                                    <input id="" type="text" class="form-control hargajual" name="ib_qty_beli" placeholder="Masukan Jumlah Item Barang Yang Sudah Dibeli (qty)" value="<?= $tb_item_barang['ib_qty_beli'] ?>" required>
                                 </div>
                                 <div class="form-group col-6">
                                     <label>Berat/Ukuran Item Barang</label>

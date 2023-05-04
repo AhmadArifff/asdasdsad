@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Register &mdash; ARISYA</title>
+<title>Register Transaksi Log Cicilan Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -60,7 +60,7 @@
                                                 Rp.
                                             </div>
                                         </div>
-                                        <input type="text" name="l_jumlah_bayar" class="form-control currency" placeholder="Masukan Harga Asli" required>
+                                        <input type="text" name="l_jumlah_bayar" class="form-control currency" placeholder="Masukan Jumlah Bayar Cicilan" required>
                                     </div>
                                 </div>
                                 <div class="form-group col-6">

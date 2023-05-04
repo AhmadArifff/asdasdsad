@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Data Transaksi Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -27,6 +27,11 @@
                         <?php if (session()->getFlashdata('success')) : ?>
                             <div class="alert alert-success w-auto" role="alert">
                                 <?php echo session()->getFlashdata('success'); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
                             </div>
                         <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
@@ -94,13 +99,20 @@
 
                                         <td>
                                             <?php if ($transaksi['t_approval_by'] != null) { ?>
+                                                <button class="btn btn-primary btn-sm" disabled>Telah Disetujui</button>
+                                            <?php } else { ?>
+                                                <button class="btn btn-warning btn-sm" disabled>Belum Disetujui</button>
+                                            <?php } ?>
+                                        </td>
+                                        <!-- <td>
+                                            <?php if ($transaksi['t_approval_by'] != null) { ?>
                                                 <a href="<?= base_url('admin/datatransaksi/noapprovedtransaksi/' . $transaksi['t_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a>
                                             <?php } else { ?>
                                                 <a href="#" data-href="<?= base_url('admin/datatransaksi/approvedtransaksi/' . $transaksi['t_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
                                             <?php } ?>
-                                        </td>
+                                        </td> -->
                                         <td>
-                                            <a href="<?= base_url('admin/datatransaksi/transaksi/' . $transaksi['t_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a>
+                                            <!-- <a href="<?= base_url('admin/datatransaksi/transaksi/' . $transaksi['t_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a> -->
                                             <a href="#" data-href="<?= base_url('admin/datatransaksi/transaksi/' . $transaksi['t_id'] . '/delete') ?>" onclick="confirmToDelete(this)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>
                                         </td>
                                     </tr>

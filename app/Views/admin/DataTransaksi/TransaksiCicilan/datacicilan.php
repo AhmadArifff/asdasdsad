@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Data Transaksi Cicilan Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -28,12 +28,18 @@
                                 <?php echo session()->getFlashdata('success'); ?>
                             </div>
                         <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
+                            </div>
+                        <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
                             <thead>
                                 <tr class="table-primary">
                                     <th class="text-center">#</th>
                                     <th>Nama Pengambil Paket</th>
                                     <th>Nama Paket</th>
+                                    <th>Jumlah Paket</th>
                                     <th>Status Cicilan Paket</th>
                                     <th>Periode Cicilan</th>
                                     <th>Jumlah Total Cicilan</th>
@@ -55,17 +61,29 @@
                                                     echo $data['u_nama'];
                                                 }
                                             endforeach ?></td>
-                                        <td><?php foreach ($DataPaket as $paket) :
-                                                if ($cicilan['p_id'] == $paket['p_id']) {
-                                                    $pnama = $paket['p_nama'] . ' ' . $i;
+                                        <td>
+                                            <?php
+                                            // $j = 1;
+                                            foreach ($DataTransaksiFungsi as $TransaksiFungsi) {
+                                                if ($TransaksiFungsi['t_id'] == $cicilan['t_id']) {
+                                                    $t_qty = $TransaksiFungsi['t_qty'];
+                                                    foreach ($DataPaket as $paket) {
+                                                        if ($cicilan['p_id'] == $paket['p_id']) {
+                                                            $pnama = $paket['p_nama'];
+                                                            echo $pnama;
+                                                        }
+                                                    }
                                                 }
-                                            endforeach;
-                                            echo $pnama; ?></td>
-                                        <td><?php foreach ($DataTransaksiFungsi as $TransaksiFungsi) :
-                                                if ($cicilan['t_id'] == $TransaksiFungsi['t_id']) {
-                                                    echo $TransaksiFungsi['t_status'];
-                                                }
-                                            endforeach ?></td>
+                                            }
+                                            ?>
+                                        </td>
+                                        <td><?= $t_qty ?></td>
+                                        <td><?php if ($cicilan['c_biaya_outstanding'] == 0) { ?>
+                                                <button class="btn btn-primary btn-sm" disabled>Sudah Lunas</button>
+                                            <?php  } else { ?>
+                                                <button class="btn btn-warning btn-sm" disabled>Belum Lunas</button>
+                                            <?php } ?>
+                                        </td>
                                         <td><?php foreach ($DataPayPeriode as $PayPeriode) :
                                                 if ($cicilan['pe_id'] == $PayPeriode['pe_id']) {
                                                     echo $PayPeriode['pe_nama'];
@@ -88,7 +106,7 @@
                                                                         echo $string;
                                                                     } ?></td>
                                         <td>
-                                            <a href="<?= base_url('admin/datatransaksi/cicilan/' . $cicilan['c_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a>
+                                            <!-- <a href="<?= base_url('admin/datatransaksi/cicilan/' . $cicilan['c_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a> -->
                                             <a href="#" data-href="<?= base_url('admin/datatransaksi/cicilan/' . $cicilan['c_id'] . '/delete') ?>" onclick="confirmToDelete(this)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>
                                         </td>
                                     </tr>

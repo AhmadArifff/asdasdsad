@@ -92,6 +92,11 @@ class CicilanModels extends Model
         $query = $this->db->query('DELETE FROM tb_cicilan WHERE t_id = ?', [$t_id]);
         return $query;
     }
+    public function deletetransaksi_pengambilanpaket($t_id)
+    {
+        $query = $this->db->query('DELETE FROM tb_transaksi_pengambilan_paket WHERE pp_t_id = ?', [$t_id]);
+        return $query;
+    }
     public function deletelogcicilan($c_id)
     {
         $query = $this->db->query('DELETE FROM tb_log_cicilan WHERE c_id = ?', [$c_id]);

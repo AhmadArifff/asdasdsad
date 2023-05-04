@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Data Transaksi Log Cicilan Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -29,13 +29,22 @@
                                 <?php echo session()->getFlashdata('success'); ?>
                             </div>
                         <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
+                            </div>
+                        <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
                             <thead>
                                 <tr class="table-primary">
                                     <th class="text-center">#</th>
                                     <th>Nama Pengambil Paket</th>
                                     <th>Referensi Pembayaran Cicilan</th>
+                                    <th>Nama Paket</th>
+                                    <th>Jumlah Paket</th>
                                     <th>Jumlah Bayar Cicilan</th>
+                                    <th>Jumlah Setoran Cicilan</th>
+                                    <th>Jumlah Periode Bayar Cicilan Masuk</th>
                                     <th>Waktu Pembayaran Cicilan</th>
                                     <th>Status Pembayaran Cicilan</th>
                                     <th>Bukti Pembayaran Cicilan</th>
@@ -58,9 +67,47 @@
                                                     echo $data['u_nama'];
                                                 }
                                             endforeach ?></td>
-                                        <td id="text-color-plus">Rp. <?php $angka =  $log_cicilan['l_jumlah_bayar'];
-                                                                        $string = number_format($angka, 2);
-                                                                        echo "+" . $string; ?></td>
+                                        <td><?php foreach ($NotipDatacicilan as $datacicilan) :
+                                                if ($log_cicilan['c_id'] == $datacicilan['c_id']) {
+                                                    foreach ($NotipDataTransaksi as $datatransaksi) {
+                                                        if ($datacicilan['t_id'] == $datatransaksi['t_id']) {
+                                                            $qty = $datatransaksi['t_qty'];
+                                                            foreach ($NotipDataPaket as $datapaket) {
+                                                                if ($datatransaksi['p_id'] == $datapaket['p_id']) {
+                                                                    $tampil = $datapaket['p_nama'];
+                                                                    echo $tampil;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            endforeach ?></td>
+
+                                        <td><?= $qty ?></td>
+                                        <td id="text-color-min">Rp. <?php $angka =  $log_cicilan['l_jumlah_bayar'];
+                                                                    $string = number_format($angka, 2);
+                                                                    echo "-" . $string; ?></td>
+
+                                        <!-- <td id="text-color-min">Rp. <?php $angka =  $log_cicilan['l_jumlah_bayar'] / $log_cicilan['l_jumlah_pembayaran_cicilan'];
+                                                                            $string = number_format($angka, 2);
+                                                                            echo "-" . $string; ?></td> -->
+                                        <td id="text-color-min">Rp.<?php foreach ($NotipDatacicilan as $datacicilan) :
+                                                                        if ($log_cicilan['c_id'] == $datacicilan['c_id']) {
+                                                                            foreach ($NotipDataTransaksi as $datatransaksi) {
+                                                                                if ($datacicilan['t_id'] == $datatransaksi['t_id']) {
+                                                                                    $qty = $datatransaksi['t_qty'];
+                                                                                    foreach ($NotipDataPaket as $datapaket) {
+                                                                                        if ($datatransaksi['p_id'] == $datapaket['p_id']) {
+                                                                                            $tampil = $datapaket['p_setoran'];
+                                                                                            $string = number_format($tampil, 2);
+                                                                                            echo "-" . $string;
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    endforeach ?></td>
+                                        <td><?= $log_cicilan['l_jumlah_pembayaran_cicilan'] ?></td>
                                         <td><?= $log_cicilan['created_at'] ?></td>
                                         <td><?php foreach ($DataUser as $showdata) {
                                                 if ($log_cicilan['l_approval_by'] != null) {

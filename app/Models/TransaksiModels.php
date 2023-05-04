@@ -110,4 +110,14 @@ class TransaksiModels extends Model
     {
         return $this->db->table('tb_pay_periode')->Get()->getResultArray();
     }
+    public function deletetransaksipengambilanpeket($t_id)
+    {
+        $query = $this->db->query('DELETE FROM tb_transaksi_pengambilan_paket WHERE pp_t_id = ?', [$t_id]);
+        return $query;
+    }
+    public function deletetransaksicicilan($t_id)
+    {
+        $query = $this->db->query('DELETE FROM tb_cicilan WHERE t_id = ?', [$t_id]);
+        return $query;
+    }
 }

@@ -54,11 +54,12 @@
                                 </div>
                                 <div class="form-group col-6">
                                     <label for="">Nama Periode Pembayaran</label>
-                                    <select class="js-example-basic-single" name="pe_id" id="" required>
-                                        <option value="">--Pilih Nama Periode Pembayaran--</option>
-                                        <?php foreach ($payperiode as $tb_pay_periode) { ?>
-                                            <option value="<?php echo $tb_pay_periode['pe_id']; ?>" <?= $tb_pay_periode['pe_id'] == $tb_transaksi['pe_id'] ? 'selected' : '' ?>><?php echo $tb_pay_periode['pe_nama']; ?></option>
-                                        <?php } ?>
+                                    <select class="js-example-basic-single" name="pe_id" id="pe_nama" required>
+                                        <?php foreach ($payperiode as $tb_pay_periode) {
+                                            if ($tb_transaksi['pe_id'] == $tb_pay_periode['pe_id']) { ?>
+                                                <option value="<?php echo $tb_pay_periode['pe_id']; ?>" <?= $tb_pay_periode['pe_id'] == $tb_transaksi['pe_id'] ? 'selected' : '' ?>><?php echo $tb_pay_periode['pe_nama']; ?></option>
+                                        <?php }
+                                        } ?>
                                     </select>
                                 </div>
                                 <div class="form-group col-6">

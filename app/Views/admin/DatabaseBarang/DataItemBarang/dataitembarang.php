@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Database Item Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -29,6 +29,11 @@
                                 <?php echo session()->getFlashdata('success'); ?>
                             </div>
                         <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
+                            </div>
+                        <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
                             <thead>
                                 <tr class="table-primary">
@@ -51,7 +56,12 @@
                                         <td class="text-center"><?= $item_barang['ib_harga'] ?></td>
                                         <td class="text-center"><?= $item_barang['ib_qty_jual'] ?></td>
                                         <td class="text-center"><?= $item_barang['ib_qty_beli'] ?></td>
-                                        <td class="text-center"><?= $item_barang['ib_qty_sisa_beli'] ?></td>
+                                        <?php $jumlah =  $item_barang['ib_qty_beli'] - $item_barang['ib_qty_jual'];
+                                        if ($jumlah < 0) { ?>
+                                            <td id="text-color-min" class="text-center"><?= $jumlah ?></td>
+                                        <?php } else { ?>
+                                            <td id="text-color-plus" class="text-center"><?= '+' . $jumlah ?></td>
+                                        <?php } ?>
                                         <td class="text-center"><?= $item_barang['ib_berat/ukuran'] ?> <?= $item_barang['ib_ktrg_berat/ukuran'] ?></td>
                                         <td>
                                             <a href="<?= base_url('admin/databasebarang/itembarang/' . $item_barang['ib_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a>

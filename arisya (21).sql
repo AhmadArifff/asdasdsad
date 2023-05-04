@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 11 Apr 2023 pada 02.21
+-- Waktu pembuatan: 02 Bulan Mei 2023 pada 17.40
 -- Versi server: 10.4.24-MariaDB
 -- Versi PHP: 8.1.6
 
@@ -7711,9 +7711,8 @@ CREATE TABLE `tb_item_barang` (
   `ib_id` int(11) NOT NULL,
   `ib_nama` varchar(255) NOT NULL,
   `ib_harga` bigint(255) NOT NULL,
-  `ib_qty_jual` int(11) DEFAULT NULL,
-  `ib_qty_beli` int(11) DEFAULT NULL,
-  `ib_qty_sisa_beli` int(11) DEFAULT NULL,
+  `ib_qty_jual` int(11) NOT NULL,
+  `ib_qty_beli` int(11) NOT NULL,
   `ib_berat/ukuran` int(11) DEFAULT NULL,
   `ib_ktrg_berat/ukuran` varchar(11) DEFAULT NULL,
   `u_id` int(11) NOT NULL
@@ -7723,9 +7722,12 @@ CREATE TABLE `tb_item_barang` (
 -- Dumping data untuk tabel `tb_item_barang`
 --
 
-INSERT INTO `tb_item_barang` (`ib_id`, `ib_nama`, `ib_harga`, `ib_qty_jual`, `ib_qty_beli`, `ib_qty_sisa_beli`, `ib_berat/ukuran`, `ib_ktrg_berat/ukuran`, `u_id`) VALUES
-(5, 'COCA KOLA', 90000, NULL, 200, NULL, 1, 'botol', 1),
-(6, 'SPRIT', 80000, NULL, 200, NULL, 1, 'botol', 1);
+INSERT INTO `tb_item_barang` (`ib_id`, `ib_nama`, `ib_harga`, `ib_qty_jual`, `ib_qty_beli`, `ib_berat/ukuran`, `ib_ktrg_berat/ukuran`, `u_id`) VALUES
+(23, 'SPRIT', 5000, 0, 1, 1, 'botol', 1),
+(24, 'COCA-COLA', 5000, 0, 10, 1, 'botol', 1),
+(25, 'MINYAK', 7000, 0, 150, 1, 'liter', 1),
+(26, 'SNACK', 20000, 0, 200, 5, 'pcs', 1),
+(27, 'BERAS', 20000, 0, 4, 1, 'kg', 1);
 
 -- --------------------------------------------------------
 
@@ -7735,8 +7737,10 @@ INSERT INTO `tb_item_barang` (`ib_id`, `ib_nama`, `ib_harga`, `ib_qty_jual`, `ib
 
 CREATE TABLE `tb_log_cicilan` (
   `l_id` int(11) NOT NULL,
+  `l_id_sementara` int(11) NOT NULL,
   `u_id` int(11) NOT NULL,
   `c_id` int(11) NOT NULL,
+  `t_id` int(11) NOT NULL,
   `l_jumlah_bayar` bigint(255) NOT NULL,
   `l_jumlah_pembayaran_cicilan` int(11) NOT NULL,
   `l_approval_by` int(11) DEFAULT NULL,
@@ -7753,7 +7757,7 @@ DELIMITER $$
 CREATE TRIGGER `delete_c_biaya_masuk` AFTER DELETE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_biaya_masuk = c_biaya_masuk - OLD.l_jumlah_bayar
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7761,7 +7765,7 @@ DELIMITER $$
 CREATE TRIGGER `delete_c_biaya_outstanding` AFTER DELETE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_biaya_outstanding = c_biaya_outstanding + OLD.l_jumlah_bayar
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7769,7 +7773,7 @@ DELIMITER $$
 CREATE TRIGGER `delete_c_cicilan_masuk` AFTER DELETE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_cicilan_masuk = c_cicilan_masuk - OLD.l_jumlah_pembayaran_cicilan
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7777,35 +7781,35 @@ DELIMITER $$
 CREATE TRIGGER `delete_c_cicilan_outstanding` AFTER DELETE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_cicilan_outstanding = c_cicilan_outstanding + OLD.l_jumlah_pembayaran_cicilan
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `report_c_biaya_masuk` AFTER INSERT ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE `tb_cicilan` SET `c_biaya_masuk` = `c_biaya_masuk` + NEW.`l_jumlah_bayar`
-  WHERE `c_id` = NEW.`c_id`;
+  WHERE `t_id` = NEW.`t_id`;
 END
 $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `report_c_biaya_outstanding` AFTER INSERT ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE `tb_cicilan` SET `c_biaya_outstanding` = `c_biaya_outstanding` - NEW.`l_jumlah_bayar`
-  WHERE `c_id` = NEW.`c_id`;
+  WHERE `t_id` = NEW.`t_id`;
 END
 $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `report_c_cicilan_masuk` AFTER INSERT ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE `tb_cicilan` SET `c_cicilan_masuk` = `c_cicilan_masuk` + NEW.`l_jumlah_pembayaran_cicilan`
-  WHERE `c_id` = NEW.`c_id`;
+  WHERE `t_id` = NEW.`t_id`;
 END
 $$
 DELIMITER ;
 DELIMITER $$
 CREATE TRIGGER `report_c_cicilan_outstanding` AFTER INSERT ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE `tb_cicilan` SET `c_cicilan_outstanding` = `c_cicilan_outstanding` - NEW.`l_jumlah_pembayaran_cicilan`
-  WHERE `c_id` = NEW.`c_id`;
+  WHERE `t_id` = NEW.`t_id`;
 END
 $$
 DELIMITER ;
@@ -7813,7 +7817,7 @@ DELIMITER $$
 CREATE TRIGGER `update_c_biaya_masuk` AFTER UPDATE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_biaya_masuk = c_biaya_masuk - OLD.l_jumlah_bayar
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7821,7 +7825,7 @@ DELIMITER $$
 CREATE TRIGGER `update_c_biaya_outstanding` BEFORE UPDATE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_biaya_outstanding = c_biaya_outstanding - OLD.l_jumlah_bayar
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7829,7 +7833,7 @@ DELIMITER $$
 CREATE TRIGGER `update_c_cicilan_masuk` AFTER UPDATE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_cicilan_masuk = c_cicilan_masuk - OLD.l_jumlah_pembayaran_cicilan
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7837,7 +7841,7 @@ DELIMITER $$
 CREATE TRIGGER `update_c_cicilan_outstanding` AFTER UPDATE ON `tb_log_cicilan` FOR EACH ROW BEGIN
   UPDATE tb_cicilan
   SET c_cicilan_outstanding = c_cicilan_outstanding + OLD.l_jumlah_pembayaran_cicilan
-  WHERE c_id = OLD.c_id;
+  WHERE t_id = OLD.t_id;
 END
 $$
 DELIMITER ;
@@ -7880,7 +7884,7 @@ CREATE TABLE `tb_packaging` (
 --
 
 INSERT INTO `tb_packaging` (`pa_id`, `pa_nama`, `pa_harga`, `pa_foto`, `u_id`) VALUES
-(18, 'KARDUS', 50000, '1678123228_996a5bf1993443e7983f.jpg', 1),
+(18, 'KARDUS', 50000, '1678123379_e6dfdf1d900abea2a124 - Copy.jpg', 1),
 (19, 'PLASTIK', 15000, '1678123379_e6dfdf1d900abea2a124.jpg', 1),
 (20, 'BOX', 125000, '1678123034_918114b8754fb751257c.jpg', 1);
 
@@ -7912,7 +7916,8 @@ CREATE TABLE `tb_paket` (
 --
 
 INSERT INTO `tb_paket` (`p_id`, `pe_id`, `p_nama`, `p_hargaJual`, `p_hargaBarang`, `pa_id`, `p_cashback`, `p_insentive`, `p_laba`, `p_persentaseLaba`, `p_setoran`, `p_foto`, `u_id`, `created_at`) VALUES
-(43, 6, 'PREMIUM', 1625000, 500000, 20, 50000, 107500, 967500, '59.538461538462', 135417, '1680923522_ea3181c8d7202dd802b9.jpg', 1, '2023-04-08 10:12:02');
+(56, 4, 'PREMIUM', 1625000, 500000, 18, 0, 112500, 1012500, '62.307692307692', 40625, '1683041942_c1ddfe1c6f15c4fcb63f.png', 1, '2023-05-02 22:39:02'),
+(57, 6, 'MEDIUM', 220000, 111111, 18, 0, 10889, 98000, '44.5455', 18333, '1683041979_5694ee912458911b1672.png', 1, '2023-05-02 22:39:39');
 
 -- --------------------------------------------------------
 
@@ -7955,7 +7960,13 @@ CREATE TABLE `tb_pengambilan_paket` (
 --
 
 INSERT INTO `tb_pengambilan_paket` (`pp_id`, `pp_p_id`, `pp_ib_id`, `pp_qty`, `pp_ktrg_berat_ukuran`) VALUES
-(19, 43, 5, 1, 'botol');
+(46, 55, 23, 1, 'botol'),
+(47, 56, 23, 1, 'botol'),
+(48, 56, 24, 1, 'botol'),
+(49, 56, 25, 1, 'liter'),
+(50, 56, 26, 1, 'pcs'),
+(51, 57, 25, 1, 'liter'),
+(52, 57, 27, 1, 'kg');
 
 -- --------------------------------------------------------
 
@@ -7975,14 +7986,38 @@ CREATE TABLE `tb_transaksi` (
   `t_status` varchar(30) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
 --
--- Dumping data untuk tabel `tb_transaksi`
+-- Struktur dari tabel `tb_transaksi_pengambilan_paket`
 --
 
-INSERT INTO `tb_transaksi` (`t_id`, `u_id`, `p_id`, `pe_id`, `t_qty`, `t_totalharga`, `waktu`, `t_approval_by`, `t_status`) VALUES
-(43, 171, 43, 6, 1, 1625000, '2023-04-09 21:59:55', NULL, ''),
-(53, 178, 43, 6, 12, 19500000, '2023-04-09 11:08:34', NULL, ''),
-(54, 178, 43, 6, 12, 19500000, '2023-04-09 11:08:35', NULL, '');
+CREATE TABLE `tb_transaksi_pengambilan_paket` (
+  `pp_id` int(11) NOT NULL,
+  `pp_t_id` int(11) NOT NULL,
+  `pp_p_id` int(11) NOT NULL,
+  `pp_ib_id` int(11) NOT NULL,
+  `pp_qty` int(11) NOT NULL,
+  `pp_ktrg_berat_ukuran` varchar(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Trigger `tb_transaksi_pengambilan_paket`
+--
+DELIMITER $$
+CREATE TRIGGER `delete_ib_qty_jual` AFTER DELETE ON `tb_transaksi_pengambilan_paket` FOR EACH ROW BEGIN
+  UPDATE `tb_item_barang` SET `ib_qty_jual` = `ib_qty_jual` - OLD.`pp_qty`
+  WHERE `ib_id` = OLD.`pp_ib_id`;
+END
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `report_ib_qty_jual` AFTER INSERT ON `tb_transaksi_pengambilan_paket` FOR EACH ROW BEGIN
+  UPDATE `tb_item_barang` SET `ib_qty_jual` = `ib_qty_jual` + NEW.`pp_qty`
+  WHERE `ib_id` = NEW.`pp_ib_id`;
+END
+$$
+DELIMITER ;
 
 -- --------------------------------------------------------
 
@@ -8021,8 +8056,8 @@ INSERT INTO `tb_user` (`u_id`, `u_username`, `u_password`, `u_fullname`, `u_role
 (2, 'coordinator', '$2y$10$9oz4Ges5KiwBfEEwA08YU.XgW3FhXk7r0Z/k8tg.32NFSlzn7JsWO', 'UJANG', 'coordinator', 1, 'coordinator@gmail.com', '2023-04-01 04:17:30', NULL, 12321, 'UJANG', 'asdsad', '2023-01-23', 'Laki-laki', '11', '1101', 'Cibeureum', '1101010', '40535'),
 (171, 'anggotaA', '$2y$10$NaD9T8Gpn0iKos8qZ6jtI.Zwg8vSqjySeNZ8yoEDuLpxpvbDcCCB.', 'ANGGOTAA', 'anggota', 2, 'qvftp1223@gmail.com', '2023-04-02 00:00:00', '2023-04-08 09:04:17', 2147483647, 'ANGGOTAA', 'CIMAHI', '2023-01-23', 'Laki-laki', '32', '3277', 'CIBEUREUM', '3277010', '10730'),
 (172, 'anggotaB', '$2y$10$JH6rsGp1VTUBTcN4mcvfF.A8i2wxEDbvhhm/AtWa1ibi7K2BPDx1G', 'ANGGOTAB', 'anggota', 2, 'coordinator@gmail.com', '2023-04-07 00:00:00', '2023-04-08 09:04:17', 12321, 'ANGGOTAB', 'ASDSAD', '2023-01-23', 'Laki-laki', '11', '1101', 'CIBEUREUM', '1101010', '40535'),
-(177, 'anggotaC', '$2y$10$rgljNG9uJ7rE7FK2N0vUeuP5uKjhmlTU5r/CI3.S5O8H0e.Vv.i1C', 'ANGGOTAA', 'anggota', 2, 'qvftp1223@gmail.com', '2023-04-09 10:42:42', '2023-04-09 10:42:42', 2147483647, 'ANGGOTAA', 'CIMAHI', '2023-01-23', 'Laki-laki', '32', '3277', 'CIMAHI SELATAN', '3278030', '10730'),
-(178, 'anggotaD', '$2y$10$DVjgaDqhAZU.0KjxirBK6Og3MEOH1MOETV93mXh9Ch2DDy8lFFd8a', 'ANGGOTAB', 'anggota', 2, 'coordinator@gmail.com', '2023-04-09 10:42:43', '2023-04-09 10:42:43', 12321, 'ANGGOTAB', 'ASDSAD', '2023-01-23', 'Laki-laki', '11', '1101', 'TEUPAH SELATAN', '3278030', '40535');
+(177, 'anggotaC', '$2y$10$rgljNG9uJ7rE7FK2N0vUeuP5uKjhmlTU5r/CI3.S5O8H0e.Vv.i1C', 'ANGGOTAA', 'anggota', 2, 'qvftp1223@gmail.com', '2023-04-09 10:42:42', '2023-04-09 10:42:42', 2147483647, 'ANGGOTAC', 'CIMAHI', '2023-01-23', 'Laki-laki', '32', '3277', 'CIMAHI SELATAN', '3278030', '10730'),
+(178, 'anggotaD', '$2y$10$DVjgaDqhAZU.0KjxirBK6Og3MEOH1MOETV93mXh9Ch2DDy8lFFd8a', 'ANGGOTAB', 'anggota', 2, 'coordinator@gmail.com', '2023-04-09 10:42:43', '2023-04-09 10:42:43', 12321, 'ANGGOTAD', 'ASDSAD', '2023-01-23', 'Laki-laki', '11', '1101', 'TEUPAH SELATAN', '3278030', '40535');
 
 --
 -- Indexes for dumped tables
@@ -8078,7 +8113,9 @@ ALTER TABLE `tb_log_cicilan`
   ADD PRIMARY KEY (`l_id`),
   ADD KEY `u_id` (`u_id`),
   ADD KEY `l_approval_by` (`l_approval_by`),
-  ADD KEY `c_id` (`c_id`);
+  ADD KEY `c_id` (`c_id`),
+  ADD KEY `l_id_sementara` (`l_id_sementara`),
+  ADD KEY `t_id` (`t_id`);
 
 --
 -- Indeks untuk tabel `tb_log_cicilan_sementara`
@@ -8132,6 +8169,15 @@ ALTER TABLE `tb_transaksi`
   ADD KEY `pe_id` (`pe_id`);
 
 --
+-- Indeks untuk tabel `tb_transaksi_pengambilan_paket`
+--
+ALTER TABLE `tb_transaksi_pengambilan_paket`
+  ADD PRIMARY KEY (`pp_id`),
+  ADD KEY `pp_p_id` (`pp_p_id`,`pp_ib_id`),
+  ADD KEY `pp_ib_id` (`pp_ib_id`),
+  ADD KEY `t_id` (`pp_t_id`);
+
+--
 -- Indeks untuk tabel `tb_user`
 --
 ALTER TABLE `tb_user`
@@ -8152,25 +8198,25 @@ ALTER TABLE `tb_alert`
 -- AUTO_INCREMENT untuk tabel `tb_cicilan`
 --
 ALTER TABLE `tb_cicilan`
-  MODIFY `c_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=218;
+  MODIFY `c_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=391;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_item_barang`
 --
 ALTER TABLE `tb_item_barang`
-  MODIFY `ib_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
+  MODIFY `ib_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_log_cicilan`
 --
 ALTER TABLE `tb_log_cicilan`
-  MODIFY `l_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `l_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_log_cicilan_sementara`
 --
 ALTER TABLE `tb_log_cicilan_sementara`
-  MODIFY `l_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `l_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_packaging`
@@ -8182,7 +8228,7 @@ ALTER TABLE `tb_packaging`
 -- AUTO_INCREMENT untuk tabel `tb_paket`
 --
 ALTER TABLE `tb_paket`
-  MODIFY `p_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=44;
+  MODIFY `p_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=58;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_pay_periode`
@@ -8194,13 +8240,19 @@ ALTER TABLE `tb_pay_periode`
 -- AUTO_INCREMENT untuk tabel `tb_pengambilan_paket`
 --
 ALTER TABLE `tb_pengambilan_paket`
-  MODIFY `pp_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `pp_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=53;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_transaksi`
 --
 ALTER TABLE `tb_transaksi`
-  MODIFY `t_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=55;
+  MODIFY `t_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=105;
+
+--
+-- AUTO_INCREMENT untuk tabel `tb_transaksi_pengambilan_paket`
+--
+ALTER TABLE `tb_transaksi_pengambilan_paket`
+  MODIFY `pp_id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=250;
 
 --
 -- AUTO_INCREMENT untuk tabel `tb_user`
@@ -8245,7 +8297,9 @@ ALTER TABLE `tb_item_barang`
 ALTER TABLE `tb_log_cicilan`
   ADD CONSTRAINT `tb_log_cicilan_ibfk_1` FOREIGN KEY (`u_id`) REFERENCES `tb_user` (`u_id`),
   ADD CONSTRAINT `tb_log_cicilan_ibfk_2` FOREIGN KEY (`l_approval_by`) REFERENCES `tb_user` (`u_id`),
-  ADD CONSTRAINT `tb_log_cicilan_ibfk_3` FOREIGN KEY (`c_id`) REFERENCES `tb_cicilan` (`c_id`);
+  ADD CONSTRAINT `tb_log_cicilan_ibfk_3` FOREIGN KEY (`c_id`) REFERENCES `tb_cicilan` (`c_id`),
+  ADD CONSTRAINT `tb_log_cicilan_ibfk_4` FOREIGN KEY (`l_id_sementara`) REFERENCES `tb_log_cicilan_sementara` (`l_id`),
+  ADD CONSTRAINT `tb_log_cicilan_ibfk_5` FOREIGN KEY (`t_id`) REFERENCES `tb_transaksi` (`t_id`);
 
 --
 -- Ketidakleluasaan untuk tabel `tb_log_cicilan_sementara`
@@ -8279,7 +8333,6 @@ ALTER TABLE `tb_pay_periode`
 -- Ketidakleluasaan untuk tabel `tb_pengambilan_paket`
 --
 ALTER TABLE `tb_pengambilan_paket`
-  ADD CONSTRAINT `tb_pengambilan_paket_ibfk_1` FOREIGN KEY (`pp_p_id`) REFERENCES `tb_paket` (`p_id`),
   ADD CONSTRAINT `tb_pengambilan_paket_ibfk_2` FOREIGN KEY (`pp_ib_id`) REFERENCES `tb_item_barang` (`ib_id`);
 
 --
@@ -8290,6 +8343,13 @@ ALTER TABLE `tb_transaksi`
   ADD CONSTRAINT `tb_transaksi_ibfk_4` FOREIGN KEY (`u_id`) REFERENCES `tb_user` (`u_id`),
   ADD CONSTRAINT `tb_transaksi_ibfk_5` FOREIGN KEY (`p_id`) REFERENCES `tb_paket` (`p_id`),
   ADD CONSTRAINT `tb_transaksi_ibfk_6` FOREIGN KEY (`pe_id`) REFERENCES `tb_pay_periode` (`pe_id`);
+
+--
+-- Ketidakleluasaan untuk tabel `tb_transaksi_pengambilan_paket`
+--
+ALTER TABLE `tb_transaksi_pengambilan_paket`
+  ADD CONSTRAINT `tb_transaksi_pengambilan_paket_ibfk_1` FOREIGN KEY (`pp_ib_id`) REFERENCES `tb_item_barang` (`ib_id`),
+  ADD CONSTRAINT `tb_transaksi_pengambilan_paket_ibfk_2` FOREIGN KEY (`pp_p_id`) REFERENCES `tb_paket` (`p_id`);
 
 --
 -- Ketidakleluasaan untuk tabel `tb_user`

@@ -20,15 +20,20 @@
                         <h4>Data User</h4>
                         <div class="card-header-action">
                             <a href="<?= base_url(); ?>/admin/databaseuser/registeruser" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Data</a>
-                            <a href="#" data-href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" onclick="confirmToExport(this)" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a>
-                            <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal"><i class="fas fa-download"></i> Export Data</button> -->
-                            <!-- <a href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a> -->
+                            <!-- Export modal by tgl -->
+                            <!-- <a href="#" data-href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" onclick="confirmToExport(this)" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a> -->
+                            <a href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a>
                         </div>
                     </div>
                     <div class="card-body table-responsive">
                         <?php if (session()->getFlashdata('success')) : ?>
                             <div class="alert alert-success w-auto" role="alert">
                                 <?php echo session()->getFlashdata('success'); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
                             </div>
                         <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
@@ -120,7 +125,7 @@
 </div>
 
 <!-- Modal -->
-<div class="modal fade" id="confirm-dialog-export" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<!-- <div class="modal fade" id="confirm-dialog-export" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -129,9 +134,8 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <div class="modal-body">
-                <!-- Form untuk memasukkan tanggal awal dan tanggal akhir -->
-                <form method="post" action="<?= base_url('admin/admincontrollers/exportfileexceluser'); ?>">
+            <form method="post" action="<?= base_url('admin/admincontrollers/exportfileexceluser'); ?>">
+                <div class="modal-body">
                     <div class="form-group">
                         <label for="tanggal-awal" class="col-form-label">Tanggal Awal:</label>
                         <input type="date" class="form-control" id="tanggal-awal" name="tanggal-awal">
@@ -140,24 +144,24 @@
                         <label for="tanggal-akhir" class="col-form-label">Tanggal Akhir:</label>
                         <input type="date" class="form-control" id="tanggal-akhir" name="tanggal-akhir">
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <a href="#" role="button" id="export-button" class="btn btn-primary">Export</a>
-                <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
-            </div>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" role="button" id="export-button" class="btn btn-primary">Export</a>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
+</div> -->
 <script>
     function confirmToDelete(el) {
         $("#delete-button").attr("href", el.dataset.href);
         $("#confirm-dialog").modal('show');
     }
 
-    function confirmToExport(el) {
-        $("#export-button").attr("href", el.dataset.href);
-        $("#confirm-dialog-export").modal('show');
-    }
+    // function confirmToExport(el) {
+    //     $("#export-button").attr("href", el.dataset.href);
+    //     $("#confirm-dialog-export").modal('show');
+    // }
 </script>
 <?= $this->endSection() ?>

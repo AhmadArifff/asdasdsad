@@ -1,6 +1,6 @@
 <?= $this->extend('coordinator/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Register &mdash; ARISYA</title>
+<title>Register Transaksi Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -43,7 +43,7 @@
                                     <select class="js-example-basic-single" name="u_id" id="">
                                         <option value="">--Pilih Nama Pengambil Paket--</option>
                                         <?php foreach ($DataUser as $tb_user) { ?>
-                                            <option value="<?php echo $tb_user['u_id']; ?>" ><?php echo $tb_user['u_nama']; ?></option>
+                                            <option value="<?php echo $tb_user['u_id']; ?>"><?php echo $tb_user['u_nama']; ?></option>
                                             <!-- <option value="<?php echo $tb_user['u_id']; ?>" <?= $tb_user['u_id'] == session()->get('u_id') ? 'selected' : '' ?>><?php echo $tb_user['u_nama']; ?></option> -->
                                         <?php } ?>
                                     </select>

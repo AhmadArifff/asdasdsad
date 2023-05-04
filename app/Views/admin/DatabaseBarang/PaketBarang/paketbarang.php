@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Register &mdash; ARISYA</title>
+<title>Register Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -106,6 +106,14 @@
                                     <input type="file" name="p_foto" class="form-control" id="file" required accept=".jpg, .jpeg, .png" /></p>
                                 </div>
                                 <div class="form-group ">
+                                    <label>Nama Item Barang</label>
+                                    <select class="js-example-basic-multiple" name="pp_ib_id[]" id="" multiple="multiple" required>
+                                        <?php foreach ($itembarang as $tb_item_barang) { ?>
+                                            <option value="<?= $tb_item_barang['ib_id'] ?>"><?= $tb_item_barang['ib_nama'] ?></option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+                                <!-- <div class="form-group ">
                                     <label>Item Barang</label>
                                     <div class="input-group-text">
                                         <select class="js-example-basic-multiple" name="pp_ib_id" id="" required>
@@ -127,10 +135,10 @@
                                             </select>
                                         </div>
                                         <div class="input-group-text">
-                                            <a id="tambahitembarang" class="btn btn-primary btn-sm update-record"><i class="fas fa-plus"></i></a>
+                                            <a id="tambahitembarang" class="btn btn-primary btn-sm update-record" href="#"><i class="fas fa-plus"></i></a>
                                         </div>
                                     </div>
-                                </div>
+                                </div> -->
                                 <div id="itembarang"></div>
                             </div>
 

@@ -15,8 +15,10 @@ class LogCicilanModels extends Model
     protected $useSoftDelete        = false;
     protected $protectFields        = true;
     protected $allowedFields        = [
+        "l_id_sementara",
         "u_id",
         "c_id",
+        "t_id",
         "l_jumlah_bayar",
         "l_jumlah_pembayaran_cicilan",
         "l_approval_by",
@@ -59,6 +61,11 @@ class LogCicilanModels extends Model
     public function deletelogcicilan($l_id)
     {
         $query = $this->db->query('DELETE FROM tb_log_cicilan WHERE l_id = ?', [$l_id]);
+        return $query;
+    }
+    public function deletelogcicilan_l_id_sementara($l_id)
+    {
+        $query = $this->db->query('DELETE FROM tb_log_cicilan WHERE l_id_sementara = ?', [$l_id]);
         return $query;
     }
 }

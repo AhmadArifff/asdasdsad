@@ -12,7 +12,9 @@ use App\Models\ProvinsiModels;
 use App\Models\TransaksiModels;
 use App\Models\CicilanModels;
 use App\Models\LogCicilanModels;
+use App\Models\LogCicilanSementaraModels;
 use App\Models\PengambilanPaketBarangModels;
+use App\Models\PengambilanTransaksiPaketBarangModels;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
@@ -78,25 +80,33 @@ class CoordinatorControllers extends BaseController
     public function PaketLogCicilan()
     {
         $cicilanModels = new CicilanModels();
+        $tb_cicilan = $cicilanModels->findAll();
         $pengambilanpaketbarang = new PengambilanPaketBarangModels();
         $u_id = $this->request->getPost('u_id');
         $kab = $cicilanModels->get_cicilan($u_id);
+        $Datatransaksi = new TransaksiModels();
         $transaksi = $cicilanModels->paketcicilan($u_id);
         $datapaket = $cicilanModels->datapaket();
         echo '<option value="">--Pilih Paket Cicilan--</option>';
-        foreach ($kab as $value => $k) {
+        foreach ($kab as $tb_c) {
             $tampil = '';
             foreach ($transaksi as $tb_transaksi) {
-                foreach ($datapaket as $tb_paket) {
-                    if ($tb_transaksi['p_id'] == $tb_paket['p_id']) {
-                        $tampil .= $tb_paket['p_nama'];
-                        $qty = $tb_transaksi['t_qty'];
+                if ($tb_transaksi['t_id'] == $tb_c['t_id']) {
+                    $status = $tb_c['c_biaya_outstanding'];
+                    if ($status != 0) {
+                        $p_id = $tb_transaksi['p_id'];
+                        foreach ($datapaket as $tb_paket) {
+                            if ($p_id == $tb_paket['p_id']) {
+                                $tampil .= $tb_paket['p_nama'];
+                                $qty = $tb_transaksi['t_qty'];
+                            }
+                        }
                     }
                 }
             }
-        }
-        if (!empty($tampil)) {
-            echo "<option value=" . $k['c_id'] . ">" . rtrim($tampil, ", ") . " - Jumlah Paket :" . $qty . "</option>";
+            if (!empty($tampil)) {
+                echo "<option value=" . $tb_c['c_id'] . ">" . rtrim($tampil, ", ") . " - Jumlah Paket :" . $qty . "</option>";
+            }
         }
     }
     public function ShowPayperiode()
@@ -483,8 +493,21 @@ class CoordinatorControllers extends BaseController
     public function deleteuser($u_id)
     {
         $user = new UsersModels();
-        $user->delete($u_id);
-        session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
+        try {
+            $result = $user->delete($u_id);
+            if ($result) {
+                session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
+            } else {
+                session()->setFlashdata('error', 'Data Tidak Berhasil Di Hapus!');
+            }
+        } catch (\mysqli_sql_exception $e) {
+            session()->setFlashdata('error', 'Data Tidak Berhasil Di Hapus! Karena Data ini kemungkinan sudah dipakai di:
+            <br>1. <b>Data User</b> Sebagai referensi <b>Anggota</b>!
+            <br>2. <b>Data Transaksi Paket</b> sebagai identitas yang mengambil Paket!
+            <br>3. <b>Data Transaksi Cicilan</b> sebagai identitas yang mengambil Paket Cicilan!
+            <br>4. <b>Data Transaksi Log Cicilan</b> sebagai identitas yang membayar Paket Cicilan!
+            <br>Silahkan Cek Data user yang kemungkinan sudah dipakai di <b>4 form diatas</b>, jika ada maka hapus terlebih dahulu dan apabila sudah tidak ada maka Data User yang mau dihapus dapat dilakukan!');
+        }
         return redirect('coordinator/databaseuser/datauser');
     }
     public function ImportFileExcelUser()
@@ -529,25 +552,19 @@ class CoordinatorControllers extends BaseController
                 $datakabupaten = $kabupaten->findAll();
                 $kecamatan = new KecamatanModels();
                 $datakecamatan = $kecamatan->findAll();
-                foreach ($dataprovinsi as $data) {
-                    if (isset($value[13]) && strtoupper($value[13]) == $data['nama_provinsi']) {
-                        $id_provinsi = $data['id_provinsi'];
-                    } else if (isset($value[13]) && strtoupper($value[13]) != $data['nama_provinsi']) {
-                        $id_provinsi = null;
+                foreach ($dataprovinsi as $datapr) {
+                    if (isset($value[12]) && strtoupper($value[12]) == $datapr['nama_provinsi']) {
+                        $id_provinsi = $datapr['id_provinsi'];
                     }
-                }
-                foreach ($datakabupaten as $data) {
-                    if (isset($value[14]) && strtoupper($value[14]) == $data['nama_kabupaten']) {
-                        $id_kabupaten = $data['id_kabupaten'];
-                    } else if (isset($value[14]) && strtoupper($value[14]) != $data['nama_kabupaten']) {
-                        $id_kabupaten = null;
+                    foreach ($datakabupaten as $datakb) {
+                        if (isset($value[13]) && strtoupper($value[13]) == $datakb['nama_kabupaten']) {
+                            $id_kabupaten = $datakb['id_kabupaten'];
+                        }
                     }
-                }
-                foreach ($datakecamatan as $data) {
-                    if (isset($value[16]) && strtoupper($value[16]) == $data['nama_kecamatan']) {
-                        $id_kecamatan = $data['id_kecamatan'];
-                    } else if (isset($value[16]) && strtoupper($value[16]) != $data['nama_kecamatan']) {
-                        $id_kecamatan = null;
+                    foreach ($datakecamatan as $datakc) {
+                        if (isset($value[15]) && strtoupper($value[15]) == $datakc['nama_kecamatan']) {
+                            $id_kecamatan = $datakc['id_kecamatan'];
+                        }
                     }
                 }
                 $data = [
@@ -559,16 +576,16 @@ class CoordinatorControllers extends BaseController
                     'u_referensi' =>  $u_id,
                     'u_email' => isset($value[6]) ? $value[6] : '',
                     // 'u_create_at' => isset($value[7]) ? strtoupper($value[9]) : '',
-                    'u_nik' => isset($value[8]) ? $value[8] : '',
-                    'u_nama' => isset($value[9]) ? strtoupper($value[9]) : '',
-                    'u_tempat_lahir' => isset($value[10]) ? strtoupper($value[10]) : '',
-                    'u_tanggal_lahir' => isset($value[11]) ? $value[11] : '',
-                    'u_jenis_kelamin' => isset($value[12]) ? $value[12] : '',
+                    'u_nik' => isset($value[7]) ? $value[7] : '',
+                    'u_nama' => isset($value[8]) ? strtoupper($value[8]) : '',
+                    'u_tempat_lahir' => isset($value[9]) ? strtoupper($value[9]) : '',
+                    'u_tanggal_lahir' => isset($value[10]) ? $value[10] : '',
+                    'u_jenis_kelamin' => isset($value[11]) ? $value[11] : '',
                     'u_provinsi' => $id_provinsi,
                     'u_kota' => $id_kabupaten,
-                    'u_kelurahan' => isset($value[15]) ? strtoupper($value[15]) : '',
+                    'u_kelurahan' => isset($value[14]) ? strtoupper($value[14]) : '',
                     'u_kecamatan' => $id_kecamatan,
-                    'u_kodepos' => isset($value[17]) ? $value[17] : '',
+                    'u_kodepos' => isset($value[16]) ? $value[16] : '',
 
                 ];
                 $user->insert($data);
@@ -781,7 +798,7 @@ class CoordinatorControllers extends BaseController
     public function transaksiprocess()
     {
         if (!$this->validate([
-            // 'u_id' => 'required',
+            'u_id' => 'required',
             'p_id' => 'required',
             't_qty' => 'required',
             // 't_status' => 'required',
@@ -789,42 +806,48 @@ class CoordinatorControllers extends BaseController
             session()->setFlashdata('error', $this->validator->listErrors());
             return redirect()->back()->withInput();
         }
-        $hargapaket = $this->request->getVar('p_hargapaket');
-        $p_id = $this->request->getVar('p_id');
-        $qty = $this->request->getVar('t_qty');
         $u_id = $this->request->getVar('u_id');
-        // $u_id = session()->get('u_id');
+        $p_id = $this->request->getVar('p_id');
+        $pe_id = $this->request->getVar('pe_id');
+        $qty = $this->request->getVar('t_qty');
+        $hargapaket = 0;
+        $paketbarang = new PaketBarangModels();
+        $datapaket = $paketbarang->findAll();
+        foreach ($datapaket as $tb_paket) {
+            if ($p_id == $tb_paket['p_id']) {
+                $hargapaket = $tb_paket['p_hargaJual'];
+            }
+        }
         $total = $hargapaket * $qty;
         $transaksi = new TransaksiModels();
         $transaksi->insert([
             'u_id' => $u_id,
             'p_id' => $p_id,
-            'pe_id' => $this->request->getVar('pe_id'),
+            'pe_id' => $pe_id,
             't_qty' => $qty,
             't_totalharga' => $total,
             // 't_status' => $this->request->getVar('t_status')
         ]);
-        // $cicilan = new CicilanModels();
-        // $datapaket = $transaksi->HargaPaket($p_id);
-        // foreach ($datapaket as $value => $k) {
-        //     $hargajual = $k['p_hargaJual'];
-        // }
-        // $number = 0;
-        // for ($i = 0; $i < $qty; $i++) {
-        //     $cicilan->insert([
-        //         'u_id' => $u_id,
-        //         'p_id' => $p_id,
-        //         't_id' => $transaksi->getInsertID(),
-        //         'pe_id' => $this->request->getVar('pe_id'),
-        //         'c_total_cicilan' => $hargajual,
-        //         'c_total_biaya' => $hargajual,
-        //         'c_cicilan_masuk' => $number,
-        //         'c_cicilan_outstanding' => $number,
-        //         'c_biaya_masuk' => $number,
-        //         'c_biaya_outstanding' => $number,
-        //         // 't_status' => $this->request->getVar('t_status')
-        //     ]);
-        // }
+        $datapengambilanpaket = new PengambilanPaketBarangModels();
+        $PTPB = new PengambilanTransaksiPaketBarangModels();
+        $datapengambilanpaket = $datapengambilanpaket->findAll();
+        for ($i = 0; $i < $qty; $i++) {
+            foreach ($datapengambilanpaket as $tb_pengambilan_paket) {
+                if ($p_id == $tb_pengambilan_paket['pp_p_id']) {
+                    $pp_p_id = $tb_pengambilan_paket['pp_p_id'];
+                    $pp_ib_id = $tb_pengambilan_paket['pp_ib_id'];
+                    $pp_qty = $tb_pengambilan_paket['pp_qty'];
+                    $pp_ktrg_berat_ukuran = $tb_pengambilan_paket['pp_ktrg_berat_ukuran'];
+                    $PTPB->insert([
+                        'pp_t_id' => $transaksi->getInsertID(),
+                        'pp_p_id' => $pp_p_id,
+                        'pp_ib_id' => $pp_ib_id,
+                        'pp_qty' => $pp_qty,
+                        'pp_ktrg_berat_ukuran' => $pp_ktrg_berat_ukuran
+                    ]);
+                }
+            }
+        }
         session()->setFlashdata('success', 'Data Berhasil Disimpan!');
         return redirect()->to('/coordinator/datatransaksi/transaksi');
     }
@@ -934,6 +957,7 @@ class CoordinatorControllers extends BaseController
     }
     public function edittransaksi($t_id)
     {
+        $UsersModels = new UsersModels();
         $paketbarang = new PaketBarangModels();
         $transaksi = new TransaksiModels();
         $data = [
@@ -955,6 +979,13 @@ class CoordinatorControllers extends BaseController
             'payperiode' => $paketbarang->datapayperiode(),
             'DataTransaksiCicilan' => '',
             'DataTransaksiLogCicilan' => '',
+            'NotipDataTransaksi' => $transaksi->get_datatransaksi(),
+            'NotipDataLogcicilan' => $transaksi->get_datalogcicilan(),
+            'NotipDataLogcicilansementara' => $transaksi->get_datalogcicilan_sementara(),
+            'NotipDatacicilan' => $transaksi->get_datacicilan(),
+            'NotipDataPeriode' => $transaksi->get_dataperiode(),
+            'NotipDataUser' => $UsersModels->findAll(),
+            'NotipDataPaket' => $transaksi->datapaket(),
 
         ];
         // ambil artikel yang akan diedit
@@ -980,12 +1011,17 @@ class CoordinatorControllers extends BaseController
             } else {
                 $lookuphargapaket = $hargapaketedit;
             }
-            $u_id = session()->get('u_id');
             $qty = $this->request->getVar('t_qty');
-            $total = $lookuphargapaket * $qty;
             $u_id = $this->request->getVar('u_id');
             $pe_id = $this->request->getVar('pe_id');
             $p_id = $this->request->getVar('p_id');
+            $datapaket = $paketbarang->findAll();
+            foreach ($datapaket as $tb_paket) {
+                if ($p_id == $tb_paket['p_id']) {
+                    $hargapaket = $tb_paket['p_hargaJual'];
+                }
+            }
+            $total = $hargapaket * $qty;
             $transaksi->update($t_id, [
                 'u_id' => $u_id,
                 'p_id' => $p_id,
@@ -995,72 +1031,79 @@ class CoordinatorControllers extends BaseController
                 // 't_status' => $this->request->getVar('t_status')
             ]);
             $cicilan = new CicilanModels();
-            // $datacicilan = $cicilan->get_cicilanby_t_id($t_id);
-            // $datacicilan1 = $cicilan->paketcicilanby_t_id($t_id);
-            // foreach ($datacicilan as $value => $data) {
-            //     foreach ($datacicilan1 as $value => $data1) {
-            //         if ($data['t_id'] == $data1['t_id']) {
-            //             $u_id1 = (int)$data1['u_id'];
-            //             $p_id1 = (int)$data1['p_id'];
-            //             $pe_id1 = (int)$data1['pe_id'];
-            //             $t_qty1 = (int)$data1['t_qty'];
-            //         }
-            //     }
-            // }
+            $datapengambilanpaket = new PengambilanPaketBarangModels();
+            $PTPB = new PengambilanTransaksiPaketBarangModels();
+            $cicilan->deletetransaksi_pengambilanpaket($t_id);
+            $datapengambilanpaket = $datapengambilanpaket->findAll();
+            for ($i = 0; $i < $qty; $i++) {
+                foreach ($datapengambilanpaket as $tb_pengambilan_paket) {
+                    if ($p_id == $tb_pengambilan_paket['pp_p_id']) {
+                        $pp_p_id = $tb_pengambilan_paket['pp_p_id'];
+                        $pp_ib_id = $tb_pengambilan_paket['pp_ib_id'];
+                        $pp_qty = $tb_pengambilan_paket['pp_qty'];
+                        $pp_ktrg_berat_ukuran = $tb_pengambilan_paket['pp_ktrg_berat_ukuran'];
+                        $PTPB->insert([
+                            'pp_t_id' => $transaksi->getInsertID(),
+                            'pp_p_id' => $pp_p_id,
+                            'pp_ib_id' => $pp_ib_id,
+                            'pp_qty' => $pp_qty,
+                            'pp_ktrg_berat_ukuran' => $pp_ktrg_berat_ukuran
+                        ]);
+                    }
+                }
+            }
             $datapaket = $transaksi->HargaPaket($p_id);
             foreach ($datapaket as $value => $k) {
                 $hargajual = $k['p_hargaJual'];
             }
+            $dataperiode = $transaksi->dataperiodeby_id($pe_id);
+            foreach ($dataperiode as $value => $pay) {
+                $pe_periode = $pay['pe_periode'];
+            }
             $number = 0;
-            // if ($qty != $t_qty1 || $p_id != $p_id1 || $u_id != $u_id1 || $pe_id != $pe_id1) {
-            //     $cicilan->deletecicilan($t_id);
-
-            //     for ($i = 0; $i < $qty; $i++) {
-            //         $cicilan->insert([
-            //             'u_id' => $this->request->getVar('u_id'),
-            //             'p_id' => $p_id,
-            //             't_id' => $t_id,
-            //             'pe_id' => $this->request->getVar('pe_id'),
-            //             'c_total_cicilan' => $hargajual,
-            //             'c_total_biaya' => $hargajual,
-            //             'c_cicilan_masuk' => $number,
-            //             'c_cicilan_outstanding' => $number,
-            //             'c_biaya_masuk' => $number,
-            //             'c_biaya_outstanding' => $number,
-            //             // 't_status' => $this->request->getVar('t_status')
-            //         ]);
-            //     }
-            // }
             if ($transaksi->where('t_id') != null) {
                 $cicilan->deletecicilan($t_id);
+                for ($i = 0; $i < $qty; $i++) {
+                    $cicilan->insert([
+                        'u_id' => $u_id,
+                        'p_id' => $p_id,
+                        't_id' => $t_id,
+                        'pe_id' => $pe_id,
+                        'c_total_cicilan' => $pe_periode,
+                        'c_total_biaya' => $hargajual,
+                        'c_cicilan_masuk' => $number,
+                        'c_cicilan_outstanding' => $pe_periode,
+                        'c_biaya_masuk' => $number,
+                        'c_biaya_outstanding' => $hargajual,
+                        // 't_status' => $this->request->getVar('t_status')
+                    ]);
+                }
             }
-
-            for ($i = 0; $i < $qty; $i++) {
-                $cicilan->insert([
-                    'u_id' => $u_id,
-                    'p_id' => $p_id,
-                    't_id' => $t_id,
-                    'pe_id' => $pe_id,
-                    'c_total_cicilan' => $hargajual,
-                    'c_total_biaya' => $hargajual,
-                    'c_cicilan_masuk' => $number,
-                    'c_cicilan_outstanding' => $number,
-                    'c_biaya_masuk' => $number,
-                    'c_biaya_outstanding' => $number,
-                    // 't_status' => $this->request->getVar('t_status')
-                ]);
-            }
-
             session()->setFlashdata('success', 'Data Berhasil Di Edit!');
             return redirect('coordinator/datatransaksi/datatransaksi');
         }
         echo view('coordinator/DataTransaksi/TransaksiPaket/transaksiedit', $data);
     }
-    public function deletetransaksi($p_id)
+    public function deletetransaksi($t_id)
     {
         $transaksi = new TransaksiModels();
-        $transaksi->delete($p_id);
-        session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
+        // $transaksi->deletetransaksicicilan($t_id);
+        try {
+            $result = $transaksi->delete($t_id);
+            // $result_delete = $transaksi->deletetransaksipengambilanpeket($t_id);
+            // if ($result_delete) {
+            if ($result) {
+                $transaksi->deletetransaksipengambilanpeket($t_id);
+                session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
+            } else {
+                session()->setFlashdata('error', 'Data Tidak Berhasil Di Hapus!');
+            }
+            // }
+        } catch (\mysqli_sql_exception $e) {
+            session()->setFlashdata('error', 'Data Tidak Berhasil Di Hapus! Karena Data ini kemungkinan sudah dipakai di:
+            <br>1. <b>Data Transaksi Cicilan</b> Sebagai <b>Data Cicilan Pembayaran Paket</b>!
+            <br>2. <b>Data Transaksi Log Cicilan</b> sebagai <b>Data Untuk Pembayaran Setiap Periode Cicilan</b>!');
+        }
         return redirect('coordinator/datatransaksi/datatransaksi');
     }
     public function ImportFileExceltransaksi()
@@ -1433,8 +1476,35 @@ class CoordinatorControllers extends BaseController
     public function deletecicilan($c_id)
     {
         $cicilan = new CicilanModels();
-        $cicilan->delete($c_id);
-        session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
+        $transaksi = new TransaksiModels();
+        $datacicilan = $cicilan->findAll();
+        $jumlahby_t_id = [];
+        foreach ($datacicilan as $tb_cicilan) {
+            if ($c_id == $tb_cicilan['c_id']) {
+                $databy_t_id = $tb_cicilan['t_id'];
+            }
+            $databy_c_id = $c_id;
+        }
+        try {
+            $result = $cicilan->delete($databy_c_id);
+            if ($result) {
+                $datacicilan_by_id = $cicilan->where('t_id', $databy_t_id)->findAll();
+                foreach ($datacicilan_by_id as $tb_cicilan_byid) {
+                    $jumlahby_t_id[] = $tb_cicilan_byid['t_id'];
+                }
+                $jumlah_by_c_id = count($jumlahby_t_id);
+                if ($jumlah_by_c_id == 0) {
+                    $transaksi->update($databy_t_id, [
+                        't_approval_by' => null
+                    ]);
+                }
+                session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
+            } else {
+                session()->setFlashdata('error', 'Data Tidak Berhasil Di Hapus!');
+            }
+        } catch (\mysqli_sql_exception $e) {
+            session()->setFlashdata('error', 'Data Tidak Berhasil Di Hapus! Karena Data ini kemungkinan sudah dipakai di <b>Data Transaksi Log Cicilan</b> sebagai <b>Data Untuk Pembayaran Setiap Periode Cicilan</b>!');
+        }
         return redirect('coordinator/datatransaksi/datacicilan');
     }
     public function ImportFileExcelcicilan()
@@ -1514,11 +1584,11 @@ class CoordinatorControllers extends BaseController
         $colomheader->setCellValue('B1', 'Nama Pengambil Paket');
         $colomheader->setCellValue('C1', 'Nama Paket');
         $colomheader->setCellValue('D1', 'Status Cicilan Paket');
-        $colomheader->setCellValue('E1', 'Jumlah Periode Cicilan');
-        $colomheader->setCellValue('F1', 'Jumlah Cicilan Masuk');
-        $colomheader->setCellValue('G1', 'Jumlah Cicilan Outstanding');
-        $colomheader->setCellValue('H1', 'Jumlah Total Biaya');
-        $colomheader->setCellValue('I1', 'Jumlah Paket');
+        $colomheader->setCellValue('E1', 'Periode Cicilan');
+        $colomheader->setCellValue('F1', 'Jumlah Total Cicilan');
+        $colomheader->setCellValue('G1', 'Jumlah Cicilan Masuk');
+        $colomheader->setCellValue('H1', 'Jumlah Cicilan Outstanding');
+        $colomheader->setCellValue('I1', 'Jumlah Total Biaya');
         $colomheader->setCellValue('J1', 'Jumlah Biaya Masuk');
         $colomheader->setCellValue('K1', 'Jumlah Biaya Outstanding');
 
@@ -1532,6 +1602,7 @@ class CoordinatorControllers extends BaseController
         $datapayperiode = $payperiode->findAll();
         $colomdata = 2;
         foreach ($datacicilan as $setcicilan) {
+            $totalharga = $setcicilan['c_biaya_masuk'];
             $colomheader->setCellValue('A' . $colomdata, ($colomdata - 1));
             foreach ($datausers as $setusers) {
                 if ($setcicilan['u_id'] == $setusers['u_id']) {
@@ -1540,17 +1611,25 @@ class CoordinatorControllers extends BaseController
             }
             foreach ($datapaket as $setpaket) {
                 if ($setcicilan['p_id'] == $setpaket['p_id']) {
+                    $hargajual = $setpaket['p_hargaJual'];
                     $colomheader->setCellValue('C' . $colomdata, $setpaket['p_nama']);
                 }
             }
             foreach ($datatransaksi as $settransaksi) {
                 if ($setcicilan['t_id'] == $settransaksi['t_id']) {
-                    $colomheader->setCellValue('D' . $colomdata, $settransaksi['t_status']);
+                    $t_qty = $settransaksi['t_qty'];
+                    $jumlahhargajual = $hargajual * $t_qty;
+                    if ($totalharga == $jumlahhargajual) {
+                        $status = "SUDAH LUNAS";
+                    } else {
+                        $status = "BELUM LUNAS";
+                    }
+                    $colomheader->setCellValue('D' . $colomdata, $status);
                 }
             }
             foreach ($datapayperiode as $setpayperiode) {
                 if ($setcicilan['pe_id'] == $setpayperiode['pe_id']) {
-                    $colomheader->setCellValue('E' . $colomdata, $setpayperiode['pe_periode']);
+                    $colomheader->setCellValue('E' . $colomdata, $setpayperiode['pe_nama']);
                 }
             }
             $colomheader->setCellValue('F' . $colomdata, $setcicilan['c_total_cicilan']);
@@ -1649,7 +1728,7 @@ class CoordinatorControllers extends BaseController
         }
         $foto = $this->request->getFile('l_foto');
         $nama_file = $foto->getRandomName();
-        $logcicilan = new LogCicilanModels();
+        $logcicilan = new LogCicilanSementaraModels();
         $u_id = $this->request->getVar('u_id');
         $c_id = $this->request->getVar('c_id');
         $datacicilan = $transaksi->datacicilanby_id($c_id);
@@ -1666,27 +1745,29 @@ class CoordinatorControllers extends BaseController
                 $p_setoran = $tb_paket['p_setoran'];
             }
         }
-        // $jumlah_pembayaran_cicilan = $l_jumlah_bayar / $p_setoran;
-        // $jumlah_bayar_cicilan = $l_jumlah_bayar / $t_qty;
         $jumlah_pembayaran_cicilan = $l_jumlah_bayar / $p_setoran;
+        // $jumlah_pembayaran_cicilan = $l_jumlah_bayar / ($p_setoran * $t_qty);
         $harga_bayar_cicilan = $l_jumlah_bayar / $jumlah_pembayaran_cicilan;
+        $totalbayar = $l_jumlah_bayar / $t_qty;
         // print_r($u_id.'-'.$c_id.'-'.$jumlah_bayar_cicilan.'-'.$jumlah_pembayaran_cicilan);
+        // for ($i = 0; $i <= $jumlah_pembayaran_cicilan; $i++) {
         $logcicilan->insert([
             'u_id' => $u_id,
             'c_id' => $c_id,
-            // 'l_jumlah_bayar' => $jumlah_bayar_cicilan,
-            // 'l_jumlah_pembayaran_cicilan' => $jumlah_pembayaran_cicilan,
             'l_jumlah_bayar' => $l_jumlah_bayar,
             'l_jumlah_pembayaran_cicilan' => $jumlah_pembayaran_cicilan,
             'l_foto' => $nama_file
         ]);
+        // }
         $foto->move('foto-bukti-pembayaran', $nama_file);
         session()->setFlashdata('success', 'Data Berhasil Disimpan!');
         return redirect()->to('/coordinator/datatransaksi/logcicilan');
     }
     public function listdatalogcicilan()
     {
-        $logcicilan = new LogCicilanModels();
+        $transaksi = new TransaksiModels();
+        $logcicilan = new LogCicilanSementaraModels();
+        $UsersModels = new UsersModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1704,6 +1785,13 @@ class CoordinatorControllers extends BaseController
             'DataTransaksiCicilan' => '',
             'DataTransaksiLogCicilan' => 'datatransaksilogcicilan',
             'DataUser' => $logcicilan->datauser(),
+            'NotipDataTransaksi' => $transaksi->get_datatransaksi(),
+            'NotipDataLogcicilan' => $transaksi->get_datalogcicilan(),
+            'NotipDataLogcicilansementara' => $transaksi->get_datalogcicilan_sementara(),
+            'NotipDatacicilan' => $transaksi->get_datacicilan(),
+            'NotipDataPeriode' => $transaksi->get_dataperiode(),
+            'NotipDataUser' => $UsersModels->findAll(),
+            'NotipDataPaket' => $transaksi->datapaket(),
 
         ];
         $data['tb_log_cicilan'] = $logcicilan->findAll();
@@ -1785,12 +1873,14 @@ class CoordinatorControllers extends BaseController
     public function deletelogcicilan($l_id)
     {
         $logcicilan = new LogCicilanModels();
-        $logcicilanfoto = $logcicilan->datalogcicilan($l_id);
-        if ($logcicilanfoto['l_foto'] == '') {
-        } else {
-            unlink('foto-bukti-pembayaran/' . $logcicilanfoto['l_foto']);
+        $logsementaracicilan = new LogCicilanSementaraModels();
+        // $logcicilanfoto = $logcicilan->datalogcicilan($l_id);
+        $logcicilan->deletelogcicilan_l_id_sementara($l_id);
+        $logcicilanfotosementara = $logsementaracicilan->datalogcicilan($l_id);
+        if (!empty($logcicilanfotosementara['l_foto'])) {
+            unlink('foto-bukti-pembayaran/' . $logcicilanfotosementara['l_foto']);
         }
-        $logcicilan->delete($l_id);
+        $logsementaracicilan->delete($l_id);
         session()->setFlashdata('success', 'Data Berhasil Di Hapus!');
         return redirect('coordinator/datatransaksi/datalogcicilan');
     }
@@ -1863,7 +1953,7 @@ class CoordinatorControllers extends BaseController
                 }
             }
             $colomheader->setCellValue('C' . $colomdata, $setlogcicilan['l_jumlah_bayar']);
-            $colomheader->setCellValue('E' . $colomdata, $setlogcicilan['l_approval_date']);
+            $colomheader->setCellValue('E' . $colomdata, $setlogcicilan['created_at']);
             $colomdata++;
         }
         $colomheader->getStyle('A1:E1')->getFont()->setBold(true);

@@ -1,6 +1,6 @@
 <?= $this->extend('coordinator/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Data Transaksi Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -29,6 +29,11 @@
                                 <?php echo session()->getFlashdata('success'); ?>
                             </div>
                         <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
+                            </div>
+                        <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
                             <thead>
                                 <tr class="table-primary">
@@ -42,7 +47,7 @@
                                     <th>Jumlah Total Harga Paket</th>
                                     <th>Waktu Transaksi Paket</th>
                                     <!-- <th>Status Paket</th> -->
-                                    <!-- <th>Status Transaksi Paket</th> -->
+                                    <th>Status Transaksi Paket</th>
                                     <th>Action Button</th>
                                 </tr>
                             </thead>
@@ -51,48 +56,63 @@
                                 foreach ($tb_transaksi as $transaksi) : ?>
                                     <tr>
                                         <td><?= $i ?></td>
-                                        <td><?php foreach ($DataUser as $data) :
+                                        <td>
+                                            <?php foreach ($DataUser as $data) :
                                                 if ($transaksi['u_id'] == $data['u_id']) {
                                                     echo $data['u_nama'];
                                                     $referensi = $data['u_referensi'];
                                                 }
-                                            endforeach ?></td>
-                                        <td><?php foreach ($DataUser as $data) :
+                                            endforeach; ?>
+                                        </td>
+                                        <td>
+                                            <?php foreach ($DataUser as $data) :
                                                 if ($referensi == $data['u_id']) {
                                                     echo $data['u_nama'];
                                                 }
-                                            endforeach ?></td>
-                                        <td><?php foreach ($DataPaket as $paket) :
+                                            endforeach; ?>
+                                        </td>
+                                        <td>
+                                            <?php foreach ($DataPaket as $paket) :
                                                 if ($transaksi['p_id'] == $paket['p_id']) {
                                                     $pnama = $paket['p_nama'];
                                                     $hargajual = $paket['p_hargaJual'];
                                                     $qty = $transaksi['t_qty'];
                                                 }
                                             endforeach;
-                                            echo $pnama; ?></td>
-                                        <td><?php foreach ($payperiode as $data) :
+                                            echo $pnama; ?>
+                                        </td>
+                                        <td>
+                                            <?php foreach ($payperiode as $data) :
                                                 if ($transaksi['pe_id'] == $data['pe_id']) {
                                                     echo $data['pe_nama'];
                                                     $jumlahperiode =  $data['pe_periode'];
                                                 }
-                                            endforeach ?></td>
+                                            endforeach; ?>
+                                        </td>
                                         <td><?= $jumlahperiode ?></td>
                                         <td><?= $transaksi['t_qty'] ?></td>
-                                        <td>Rp. <?php $angka = $transaksi['t_totalharga'];
+                                        <td>Rp. <?php
+                                                $angka = $transaksi['t_totalharga'];
                                                 $string = number_format($angka, 2);
                                                 echo $string; ?></td>
                                         <td><?= $transaksi['waktu'] ?></td>
-                                        <!-- <td class="text-center"><?php $approved = $transaksi['t_approval_by'];
-                                                                        if ($approved != null) { ?>
-                                                <a href="<?= base_url('coordinator/datatransaksi/noapprovedtransaksi/' . $transaksi['t_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a>
-                                            <?php
-                                                                        } else { ?>
-                                                <a href="#" data-href="<?= base_url('coordinator/datatransaksi/approvedtransaksi/' . $transaksi['t_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
+
+                                        <td>
+                                            <?php if ($transaksi['t_approval_by'] != null) { ?>
+                                                <button class="btn btn-primary btn-sm" disabled>Telah Disetujui</button>
+                                            <?php } else { ?>
+                                                <button class="btn btn-warning btn-sm" disabled>Belum Disetujui</button>
+                                            <?php } ?>
+                                        </td>
+                                        <!-- <td>
+                                            <?php if ($transaksi['t_approval_by'] != null) { ?>
+                                                <a href="<?= base_url('admin/datatransaksi/noapprovedtransaksi/' . $transaksi['t_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a>
+                                            <?php } else { ?>
+                                                <a href="#" data-href="<?= base_url('admin/datatransaksi/approvedtransaksi/' . $transaksi['t_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
                                             <?php } ?>
                                         </td> -->
-                                        <!-- <td><?= $transaksi['t_status'] ?></td> -->
                                         <td>
-                                            <a href="<?= base_url('coordinator/datatransaksi/transaksi/' . $transaksi['t_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a>
+                                            <!-- <a href="<?= base_url('coordinator/datatransaksi/transaksi/' . $transaksi['t_id'] . '/edit') ?>" class="btn btn-warning btn-sm"><i class="fas fa-pencil-alt"></i></a> -->
                                             <a href="#" data-href="<?= base_url('coordinator/datatransaksi/transaksi/' . $transaksi['t_id'] . '/delete') ?>" onclick="confirmToDelete(this)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>
                                         </td>
                                     </tr>

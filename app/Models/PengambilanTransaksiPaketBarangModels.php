@@ -4,10 +4,10 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class PengambilanPaketBarangModels extends Model
+class PengambilanTransaksiPaketBarangModels extends Model
 {
     protected $DBGroup              = 'default';
-    protected $table                = 'tb_pengambilan_paket';
+    protected $table                = 'tb_transaksi_pengambilan_paket';
     protected $primaryKey           = 'pp_id';
     protected $useAutoIncrement     = true;
     protected $insertID             = 0;
@@ -15,7 +15,7 @@ class PengambilanPaketBarangModels extends Model
     protected $useSoftDelete        = false;
     protected $protectFields        = true;
     protected $allowedFields        = [
-        "pp_id",
+        "pp_t_id",
         "pp_p_id",
         "pp_ib_id",
         "pp_qty",
@@ -58,30 +58,5 @@ class PengambilanPaketBarangModels extends Model
     {
         $query = "DELETE FROM tb_pengambilan_paket WHERE pp_p_id = ?";
         $this->db->query($query, [$id]);
-    }
-    public function deleteitembrang($id)
-    {
-        $query = "DELETE FROM tb_pengambilan_paket WHERE pp_ib_id = ?";
-        $this->db->query($query, [$id]);
-    }
-    public function deleteitembrang_by_p_id($id)
-    {
-        $query = "DELETE FROM tb_pengambilan_paket WHERE pp_p_id = ?";
-        $this->db->query($query, [$id]);
-    }
-    public function insertt($data = null, bool $returnID = true)
-    {
-        $data['pp_ib_id'] = serialize($data['pp_ib_id']);
-        return parent::insert($data, $returnID);
-    }
-
-    // Mengambil data array pp_ib_id dari string yang tersimpan di dalam database
-    public function find($id = null, $columns = '*')
-    {
-        $result = parent::find($id, $columns);
-        if (!empty($result)) {
-            $result['pp_ib_id'] = unserialize($result['pp_ib_id']);
-        }
-        return $result;
     }
 }

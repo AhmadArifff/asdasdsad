@@ -43,7 +43,8 @@ $routes->get('/select', 'DependentDropdownController::index');
 $routes->post('AdminControllers/Kabupaten', 'AdminControllers::Kabupaten');
 $routes->post('AdminControllers/Kecamatan', 'AdminControllers::Kecamatan');
 $routes->post('AdminControllers/HargaPackaging', 'AdminControllers::HargaPackaging');
-$routes->post('AdminControllers/ShowItemBarang', 'AdminControllers::ShowItemBarang');
+// $routes->get('AdminControllers/ShowItemBarang', 'AdminControllers::ShowItemBarang');
+// $routes->post('AdminControllers/ShowItemBarang', 'AdminControllers::ShowItemBarang');
 $routes->post('AdminControllers/myFunction', 'AdminControllers::myFunction');
 $routes->post('AdminControllers/PaketCicilan', 'AdminControllers::PaketCicilan');
 $routes->post('AdminControllers/PaketLogCicilan', 'AdminControllers::PaketLogCicilan');
@@ -177,6 +178,7 @@ $routes->group("coordinator", ["filter" => "auth"], function ($routes) {
     $routes->match(['get', 'post'], 'coordinatorcontrollers/importfileexcellogcicilan', 'CoordinatorControllers::ImportFileExcellogcicilan');
     $routes->get('coordinatorcontrollers/exportfileexcellogcicilan', 'CoordinatorControllers::ExportDataExcellogcicilan');
     $routes->get('logout', 'LoginControllers::logout');
+    $routes->get('datauser', ["RESTAPI_CoordinatorControllers" => "getdatauser"]);
 });
 
 

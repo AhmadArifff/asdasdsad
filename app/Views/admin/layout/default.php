@@ -259,47 +259,52 @@
                                     $transaksi_time = strtotime($tb_transaksi['waktu']);
                                     $waktu = $current_time - strtotime($tb_transaksi['waktu']);
                                     $jam = floor($waktu / 3600);
-                                    $menit = floor(($waktu % 3600) / 60); ?>
-                                    <div class="dropdown-item">
-                                        <?php $approved = $tb_transaksi['t_approval_by'];
-                                        if ($approved != null) { ?>
-                                            <div class="dropdown-item-icon bg-success text-white">
-                                                <i class="fas fa-check"></i>
-                                            </div>
-                                            <div class="dropdown-item-desc">
-                                                <?php foreach ($NotipDataUser as $tb_user) {
-                                                    if ($tb_transaksi['u_id'] == $tb_user['u_id']) { ?>
-                                                        <?php foreach ($NotipDataPaket as $tb_paket) {
-                                                            if ($tb_transaksi['p_id'] == $tb_paket['p_id']) { ?>
-                                                                <?= strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah mengambil paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah <b style="font-weight: bold; font-size: 13px;">' . $tb_transaksi['t_qty'] . "</b> paket."; ?>
+                                    $menit = floor(($waktu % 3600) / 60);
+                                    $approved = $tb_transaksi['t_approval_by'];
+                                    if ($approved == null) { ?>
+                                        <div class="dropdown-item">
+                                            <?php if ($approved != null) {
+                                                if ($approved != null) {
+                                                } else {
+                                            ?>
+                                                    <div class="dropdown-item-icon bg-success text-white">
+                                                        <i class="fas fa-check"></i>
+                                                    </div>
+                                                    <div class="dropdown-item-desc">
+                                                        <?php foreach ($NotipDataUser as $tb_user) {
+                                                            if ($tb_transaksi['u_id'] == $tb_user['u_id']) { ?>
+                                                                <?php foreach ($NotipDataPaket as $tb_paket) {
+                                                                    if ($tb_transaksi['p_id'] == $tb_paket['p_id']) { ?>
+                                                                        <?= strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah mengambil paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah <b style="font-weight: bold; font-size: 13px;">' . $tb_transaksi['t_qty'] . "</b> paket."; ?>
+                                                        <?php }
+                                                                }
+                                                            }
+                                                        } ?>
+                                                        <div class="time"><a href="<?= base_url('admin/datatransaksi/noapprovedtransaksi/' . $tb_transaksi['t_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a></div>
+                                                        <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                    </div>
                                                 <?php }
+                                            } else { ?>
+                                                <div class="dropdown-item-icon bg-danger text-white">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div class="dropdown-item-desc">
+                                                    <?php foreach ($NotipDataUser as $tb_user) {
+                                                        if ($tb_transaksi['u_id'] == $tb_user['u_id']) { ?>
+                                                            <?php foreach ($NotipDataPaket as $tb_paket) {
+                                                                if ($tb_transaksi['p_id'] == $tb_paket['p_id']) { ?>
+                                                                    <?= strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah mengambil paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah <b style="font-weight: bold; font-size: 13px;">' . $tb_transaksi['t_qty'] . "</b> paket."; ?>
+                                                    <?php }
+                                                            }
                                                         }
-                                                    }
-                                                } ?>
-                                                <div class="time"><a href="<?= base_url('admin/datatransaksi/noapprovedtransaksi/' . $tb_transaksi['t_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a></div>
-                                                <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
-                                            </div>
-                                        <?php
-                                        } else { ?>
-                                            <div class="dropdown-item-icon bg-danger text-white">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </div>
-                                            <div class="dropdown-item-desc">
-                                                <?php foreach ($NotipDataUser as $tb_user) {
-                                                    if ($tb_transaksi['u_id'] == $tb_user['u_id']) { ?>
-                                                        <?php foreach ($NotipDataPaket as $tb_paket) {
-                                                            if ($tb_transaksi['p_id'] == $tb_paket['p_id']) { ?>
-                                                                <?= strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah mengambil paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah <b style="font-weight: bold; font-size: 13px;">' . $tb_transaksi['t_qty'] . "</b> paket."; ?>
-                                                <?php }
-                                                        }
-                                                    }
-                                                } ?>
-                                                <a href="#" data-href="<?= base_url('admin/datatransaksi/approvedtransaksi/' . $tb_transaksi['t_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
-                                                <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
-                                <?php } ?>
+                                                    } ?>
+                                                    <a href="#" data-href="<?= base_url('admin/datatransaksi/approvedtransaksi/' . $tb_transaksi['t_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
+                                                    <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                </div>
+                                            <?php } ?>
+                                        </div>
+                                <?php }
+                                } ?>
 
                                 <!-- Data approved transaksi Cicilan -->
                                 <?php $current_time = time();
@@ -308,73 +313,80 @@
                                     $transaksi_time = strtotime($tb_log_cicilan_sementara['created_at']);
                                     $waktu = $current_time - strtotime($tb_log_cicilan_sementara['created_at']);
                                     $jam = floor($waktu / 3600);
-                                    $menit = floor(($waktu % 3600) / 60); ?>
-                                    <div class="dropdown-item">
-                                        <?php $approvedsementara = $tb_log_cicilan_sementara['l_approval_by'];
-                                        // $approved = $tb_log_cicilan['l_approval_by'];
-                                        if ($approvedsementara != null) { ?>
-                                            <div class="dropdown-item-icon bg-success text-white">
-                                                <i class="fas fa-check"></i>
-                                            </div>
-                                            <div class="dropdown-item-desc">
-                                                <?php foreach ($NotipDataUser as $tb_user) {
-                                                    if ($tb_log_cicilan_sementara['u_id'] == $tb_user['u_id']) {
-                                                        $c_id = $tb_log_cicilan_sementara['c_id'];
-                                                        foreach ($NotipDatacicilan as $tb_cicilan) {
-                                                            if ($c_id == $tb_cicilan['c_id']) {
-                                                                $p_id = $tb_cicilan['p_id'];
-                                                                $pe_id = $tb_cicilan['pe_id'];
-                                                                foreach ($NotipDataPeriode as $tb_pay_periode) {
-                                                                    if ($pe_id == $tb_pay_periode['pe_id']) {
-                                                                        $pe_periode = $tb_pay_periode['pe_periode'];
-                                                                        foreach ($NotipDataPaket as $tb_paket) {
-                                                                            if ($p_id == $tb_paket['p_id']) {
-                                                                                echo strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah membayar paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah bayar sebesar Rp. <b style="font-weight: bold; font-size: 13px;">Rp' . number_format($tb_log_cicilan_sementara['l_jumlah_bayar'], 2, ',', '.') . '</b> sebanyak periode pembayaran <b style="font-weight: bold; font-size: 13px;">' . $pe_periode . '</b> <b style="font-weight: bold; font-size: 13px;">' . $tb_pay_periode['pe_nama'] . '</b>.';
+                                    $menit = floor(($waktu % 3600) / 60);
+                                    $approvedsementara = $tb_log_cicilan_sementara['l_approval_by'];
+                                    if ($approvedsementara == null) { ?>
+                                        <div class="dropdown-item">
+                                            <?php
+                                            // $approvedsementara = $tb_log_cicilan_sementara['l_approval_by'];
+                                            // $approved = $tb_log_cicilan['l_approval_by'];
+                                            if ($approvedsementara != null) {
+                                                if ($approvedsementara != null) {
+                                                } else { ?>
+                                                    <div class="dropdown-item-icon bg-success text-white">
+                                                        <i class="fas fa-check"></i>
+                                                    </div>
+                                                    <div class="dropdown-item-desc">
+                                                        <?php foreach ($NotipDataUser as $tb_user) {
+                                                            if ($tb_log_cicilan_sementara['u_id'] == $tb_user['u_id']) {
+                                                                $c_id = $tb_log_cicilan_sementara['c_id'];
+                                                                foreach ($NotipDatacicilan as $tb_cicilan) {
+                                                                    if ($c_id == $tb_cicilan['c_id']) {
+                                                                        $p_id = $tb_cicilan['p_id'];
+                                                                        $pe_id = $tb_cicilan['pe_id'];
+                                                                        foreach ($NotipDataPeriode as $tb_pay_periode) {
+                                                                            if ($pe_id == $tb_pay_periode['pe_id']) {
+                                                                                $pe_periode = $tb_pay_periode['pe_periode'];
+                                                                                foreach ($NotipDataPaket as $tb_paket) {
+                                                                                    if ($p_id == $tb_paket['p_id']) {
+                                                                                        echo strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah membayar paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah bayar sebesar Rp. <b style="font-weight: bold; font-size: 13px;">Rp' . number_format($tb_log_cicilan_sementara['l_jumlah_bayar'], 2, ',', '.') . '</b> sebanyak periode pembayaran <b style="font-weight: bold; font-size: 13px;">' . $pe_periode . '</b> <b style="font-weight: bold; font-size: 13px;">' . $tb_pay_periode['pe_nama'] . '</b>.';
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        } ?>
+
+                                                        <div class="time"><a href="<?= base_url('admin/datalogcicilan/noapprovedlogcicilan/' . $tb_log_cicilan_sementara['l_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a></div>
+                                                        <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                    </div>
+                                                <?php
+                                                }
+                                            } else { ?>
+                                                <div class="dropdown-item-icon bg-danger text-white">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div class="dropdown-item-desc">
+                                                    <?php foreach ($NotipDataUser as $tb_user) {
+                                                        if ($tb_log_cicilan_sementara['u_id'] == $tb_user['u_id']) {
+                                                            $c_id = $tb_log_cicilan_sementara['c_id']; ?>
+                                                            <?php foreach ($NotipDatacicilan as $tb_cicilan) {
+                                                                if ($c_id == $tb_cicilan['c_id']) {
+                                                                    $p_id = $tb_cicilan['p_id'];
+                                                                    $pe_id = $tb_cicilan['pe_id'];
+                                                                    foreach ($NotipDataPeriode as $tb_pay_periode) {
+                                                                        if ($pe_id == $tb_pay_periode['pe_id']) {
+                                                                            $pe_periode = $tb_pay_periode['pe_periode'];
+                                                                            foreach ($NotipDataPaket as $tb_paket) {
+                                                                                if ($p_id == $tb_paket['p_id']) { ?>
+                                                                                    <?= strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah membayar paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah bayar sebesar Rp. <b style="font-weight: bold; font-size: 13px;">' .  number_format($tb_log_cicilan_sementara['l_jumlah_bayar'], 2, ',', '.') . '</b> sebanyak periode pembayaran <b style="font-weight: bold; font-size: 13px;">' . $tb_log_cicilan_sementara['l_jumlah_pembayaran_cicilan'] . '</b> <b style="font-weight: bold; font-size: 13px;">' . $tb_pay_periode['pe_nama'] . "</b>."; ?>
+                                                    <?php }
                                                                             }
                                                                         }
                                                                     }
                                                                 }
                                                             }
                                                         }
-                                                    }
-                                                } ?>
-
-                                                <div class="time"><a href="<?= base_url('admin/datalogcicilan/noapprovedlogcicilan/' . $tb_log_cicilan_sementara['l_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a></div>
-                                                <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
-                                            </div>
-                                        <?php
-                                        } else { ?>
-                                            <div class="dropdown-item-icon bg-danger text-white">
-                                                <i class="fas fa-exclamation-triangle"></i>
-                                            </div>
-                                            <div class="dropdown-item-desc">
-                                                <?php foreach ($NotipDataUser as $tb_user) {
-                                                    if ($tb_log_cicilan_sementara['u_id'] == $tb_user['u_id']) {
-                                                        $c_id = $tb_log_cicilan_sementara['c_id']; ?>
-                                                        <?php foreach ($NotipDatacicilan as $tb_cicilan) {
-                                                            if ($c_id == $tb_cicilan['c_id']) {
-                                                                $p_id = $tb_cicilan['p_id'];
-                                                                $pe_id = $tb_cicilan['pe_id'];
-                                                                foreach ($NotipDataPeriode as $tb_pay_periode) {
-                                                                    if ($pe_id == $tb_pay_periode['pe_id']) {
-                                                                        $pe_periode = $tb_pay_periode['pe_periode'];
-                                                                        foreach ($NotipDataPaket as $tb_paket) {
-                                                                            if ($p_id == $tb_paket['p_id']) { ?>
-                                                                                <?= strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> telah membayar paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah bayar sebesar Rp. <b style="font-weight: bold; font-size: 13px;">' .  number_format($tb_log_cicilan_sementara['l_jumlah_bayar'], 2, ',', '.') . '</b> sebanyak periode pembayaran <b style="font-weight: bold; font-size: 13px;">' . $tb_log_cicilan_sementara['l_jumlah_pembayaran_cicilan'] . '</b> <b style="font-weight: bold; font-size: 13px;">' . $tb_pay_periode['pe_nama'] . "</b>."; ?>
-                                                <?php }
-                                                                        }
-                                                                    }
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                } ?>
-                                                <a href="#" data-href="<?= base_url('admin/datalogcicilan/approvedlogcicilan/' . $tb_log_cicilan_sementara['l_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
-                                                <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
-                                            </div>
-                                        <?php } ?>
-                                    </div>
+                                                    } ?>
+                                                    <a href="#" data-href="<?= base_url('admin/datalogcicilan/approvedlogcicilan/' . $tb_log_cicilan_sementara['l_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
+                                                    <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                </div>
+                                            <?php } ?>
+                                        </div>
                                 <?php }
+                                }
                                 ?>
                                 <!-- <a href="#" class="dropdown-item">
                                     <div class="dropdown-item-icon bg-info text-white">
@@ -396,7 +408,7 @@
                             <div class="d-sm-none d-lg-inline-block">Hi, <?= session()->get('u_fullname'); ?></div>
                         </a>
                         <div class="dropdown-menu dropdown-menu-right">
-                            <div class="dropdown-title">Logged in 5 min ago</div>
+                            <!-- <div class="dropdown-title">Logged in 5 min ago</div>
                             <a href="features-profile.html" class="dropdown-item has-icon">
                                 <i class="far fa-user"></i> Profile
                             </a>
@@ -405,7 +417,7 @@
                             </a>
                             <a href="features-settings.html" class="dropdown-item has-icon">
                                 <i class="fas fa-cog"></i> Settings
-                            </a>
+                            </a> -->
                             <div class="dropdown-divider"></div>
                             <a href="<?= base_url(); ?>/admin/logout" class="dropdown-item has-icon text-danger">
                                 <i class="fas fa-sign-out-alt"></i> Logout
@@ -559,18 +571,19 @@
                 });
             });
             //show Item Barang
-            $("#tambahitembarang").change(function(e) {
-                $.ajax({
-                    url: "<?php echo base_url('AdminControllers/ShowItemBarang'); ?>",
-                    method: 'post',
-                    success: function(response) {
-                        $("#itembarang").html(response);
-                    },
-                    error: function(xhr, status, error) {
-                        console.log(error);
-                    }
-                });
-            });
+            // $(document).on('click', '#tambahitembarang', function(e) {
+            //     e.preventDefault();
+            //     $.ajax({
+            //         url: "<?php echo base_url('AdminControllers/ShowItemBarang'); ?>",
+            //         method: 'post',
+            //         success: function(response) {
+            //             $("#itembarang").html(response);
+            //         },
+            //         error: function(xhr, status, error) {
+            //             console.log(error);
+            //         }
+            //     });
+            // });
             //show Harga Packaging
             $("#pa_id").change(function(e) {
                 var pa_id = $("#pa_id").val();

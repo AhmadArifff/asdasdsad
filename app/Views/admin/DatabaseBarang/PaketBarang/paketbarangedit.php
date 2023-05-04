@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Edit Data Kategori Barang &mdash; ARISYA</title>
+<title>Edit Data Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -30,7 +30,7 @@
                                 <?php echo session()->getFlashdata('error'); ?>
                             </div>
                         <?php endif; ?>
-                        <form method="post" action="" id="text-editor">
+                        <form method="post" action="" id="text-editor" enctype="multipart/form-data">
                             <?= csrf_field(); ?>
                             <div class="row">
                                 <input type="hidden" name="no" id="p_id" value="<?= $tb_paket['p_id'] ?>" />
@@ -103,7 +103,33 @@
                                         <label for="">Foto Paket Barang</label>
                                         <input type="file" name="p_foto" class="form-control" id="file" required accept=".jpg, .jpeg, .png" /></p>
                                     </div>
-                                    <div class="form-group ">
+                                    <div class="form-group">
+                                        <label>Nama Item Barang</label>
+                                        <select class="js-example-basic-multiple" name="pp_ib_id[]" id="" multiple="multiple" required>
+                                            <?php foreach ($itembarang as $tb_item_barang) {
+                                                $tampil = '';
+                                                $is_item_found = false;
+                                                foreach ($pengambilanitembarang as $tb_pengambilan_paket) {
+                                                    if ($tb_paket['p_id'] == $tb_pengambilan_paket['pp_p_id']) {
+                                                        $pp_ib_id = $tb_pengambilan_paket['pp_ib_id'];
+                                                        if ($pp_ib_id == $tb_item_barang['ib_id']) {
+                                                            $tampil = $tb_item_barang['ib_nama'];
+                                                            $is_item_found = true;
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                                if (!$is_item_found) { ?>
+                                                    <option value="<?= $tb_item_barang['ib_id'] ?>"><?= $tb_item_barang['ib_nama'] ?></option>
+                                                <?php } else { ?>
+                                                    <option value="<?= $tb_item_barang['ib_id'] ?>" selected><?= $tampil ?></option>
+                                            <?php }
+                                            } ?>
+                                        </select>
+                                    </div>
+
+
+                                    <!-- <div class="form-group ">
                                         <label>Nama Item Barang</label>
                                         <div class="input-group-text">
                                             <select class="js-example-basic-multiple" name="pp_ib_id" id="" required>
@@ -129,11 +155,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div id="itembarang"></div>
+                                    <div id="itembarang"></div> -->
                                 </div>
 
 
-                                <input id="" type="text" class="form-control" name="preview" placeholder="" value="<?= $tb_packaging['pa_foto'] ?>" hidden>
+                                <div class="form-group">
+                                    <label for="">Preview Foto Packaging Barang Sebelumnya</label>
+                                    <img src="<?= base_url('foto-paket/' . $tb_paket['p_foto']) ?>" id="gambar_load" style="border-radius: 5px;" class="form-control h-auto" height="100%"></p>
+                                    <input id="" type="text" class="form-control" name="preview" placeholder="" value="<?= $tb_paket['p_foto'] ?>" hidden>
+                                </div>
 
                                 <div class="form-group">
                                     <button type="submit" class="btn btn-primary btn-lg btn-block" name="submit">

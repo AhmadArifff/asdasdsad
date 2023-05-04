@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Data Paket Barang &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -27,6 +27,11 @@
                         <?php if (session()->getFlashdata('success')) : ?>
                             <div class="alert alert-success w-auto" role="alert">
                                 <?php echo session()->getFlashdata('success'); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
                             </div>
                         <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
@@ -92,17 +97,21 @@
                                                 echo $string;  ?></td>
                                         <td><?= number_format($paket['p_persentaseLaba'], 2) . "%" ?></td>
                                         <td style="text-align:center"><img src="<?= base_url('foto-paket/' . $paket['p_foto']) ?>" width="200px" style="border-radius: 5px;"></td>
-                                        <td><?php foreach ($pengambilanpaket as $tb_pengambilan_paket) :
+                                        <td><?php
+                                            $j = 1;
+                                            foreach ($pengambilanpaket as $tb_pengambilan_paket) :
                                                 if ($paket['p_id'] == $tb_pengambilan_paket['pp_p_id']) {
                                                     foreach ($itembarang as $tb_item_barang) {
                                                         $sb = $tb_pengambilan_paket['pp_ib_id'];
                                                         if ($sb == $tb_item_barang['ib_id']) {
-                                                            $tampil = $tb_item_barang['ib_nama'] . " - " . $tb_pengambilan_paket['pp_qty'] . $tb_pengambilan_paket['pp_ktrg_berat_ukuran'] . ", ";
+                                                            $tampil = $j . ". " . $tb_item_barang['ib_nama'] . " - " . $tb_pengambilan_paket['pp_qty'] . $tb_pengambilan_paket['pp_ktrg_berat_ukuran'] . "<br />\n";
                                                         }
                                                     }
                                                     echo $tampil;
+                                                    $j++;
                                                 }
-                                            endforeach ?></td>
+                                            endforeach;
+                                            ?></td>
                                         <td>
                                             <a href="<?= base_url('admin/databasebarang/paketbarang/' . $paket['p_id'] . '/edit') ?>" class="btn btn-warning btn-sm update-record" data-p_id="<?php echo $paket['p_id']; ?>"><i class="fas fa-pencil-alt"></i></a>
                                             <a href="#" data-href="<?= base_url('admin/databasebarang/paketbarang/' . $paket['p_id'] . '/delete') ?>" onclick="confirmToDelete(this)" class="btn btn-danger btn-sm"><i class="fas fa-trash"></i></a>

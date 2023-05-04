@@ -1,6 +1,6 @@
 <?= $this->extend('admin/layout/default') ?>
 <?= $this->section('title') ?>
-<title>Forms Data Barang &mdash; ARISYA</title>
+<title>Data Periode Pembayaran &mdash; ARISYA</title>
 <?= $this->endSection() ?>
 <?= $this->section('content') ?>
 <section class="section">
@@ -27,6 +27,11 @@
                         <?php if (session()->getFlashdata('success')) : ?>
                             <div class="alert alert-success w-auto" role="alert">
                                 <?php echo session()->getFlashdata('success'); ?>
+                            </div>
+                        <?php endif; ?>
+                        <?php if (session()->getFlashdata('error')) : ?>
+                            <div class="alert alert-danger w-auto" role="alert">
+                                <?php echo session()->getFlashdata('error'); ?>
                             </div>
                         <?php endif; ?>
                         <table id="myTable" class="table table-striped table-bordered">
