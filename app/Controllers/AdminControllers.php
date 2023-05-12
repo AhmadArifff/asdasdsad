@@ -757,6 +757,162 @@ class AdminControllers extends BaseController
     //     $writer->save('php://output');
     //     exit();
     // }
+    public function ExportDataExcelUserByTGL($startDate = null, $endDate = null)
+    {
+        // Load required classes
+        $db = db_connect();
+        $builder = $db->table('tb_user');
+
+        // Set default value for start and end date
+        if ($startDate === null) {
+            $startDate = date('Y-m-d', strtotime('-7 days'));
+        }
+        if ($endDate === null) {
+            $endDate = date('Y-m-d');
+        }
+
+        // Query data from database
+        $query = $builder->select('*')
+            ->where('DATE(u_create_at) BETWEEN "' . date('Y-m-d', strtotime($startDate)) . '" AND "' . date('Y-m-d', strtotime($endDate)) . '"')
+            ->get();
+        $data = $query->getResultArray();
+
+        // Load the Excel library
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set column headings
+        $sheet->setCellValue('A1', 'Kolom 1');
+        $sheet->setCellValue('B1', 'Kolom 2');
+        $sheet->setCellValue('C1', 'Kolom 3');
+
+        // Add data to the worksheet
+        $i = 2;
+        foreach ($data as $row) {
+            $sheet->setCellValue('A' . $i, $row['u_username']);
+            $sheet->setCellValue('B' . $i, $row['u_fullname']);
+            $sheet->setCellValue('C' . $i, $row['u_role']);
+            $i++;
+        }
+
+        // Set headers to download the file rather than displayed
+        header('Content-Type: application/vnd.ms-excel');
+        header('Content-Disposition: attachment; filename="data_excel.xlsx"');
+
+        // Write the Excel file to output stream
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
+        // Load the Excel library
+        // $user = new UsersModels();
+        // $datauser = $user->findAll();
+        // $provinsi = new ProvinsiModels();
+        // $dataprovinsi = $provinsi->findAll();
+        // $kabupaten = new KabupatenModels();
+        // $datakabupaten = $kabupaten->findAll();
+        // $kecamatan = new KecamatanModels();
+        // $datakecamatan = $kecamatan->findAll();
+        // $spreadsheet = new Spreadsheet();
+        // $spreadsheet = new Spreadsheet();
+        // $colomheader = $spreadsheet->getActiveSheet();
+        // $colomheader->setCellValue('A1', 'No');
+        // $colomheader->setCellValue('B1', 'Username');
+        // // $colomheader->setCellValue('C1', 'Password');
+        // $colomheader->setCellValue('C1', 'Full Name');
+        // $colomheader->setCellValue('D1', 'Role Akses');
+        // $colomheader->setCellValue('E1', 'Nama Refernsi');
+        // $colomheader->setCellValue('F1', 'Email');
+        // $colomheader->setCellValue('G1', 'Data Dibuat');
+        // $colomheader->setCellValue('H1', 'NIK KTP');
+        // $colomheader->setCellValue('I1', 'Nama Lengkap KTP');
+        // $colomheader->setCellValue('J1', 'Tempat  Lahir');
+        // $colomheader->setCellValue('K1', 'Tanggal Lahir');
+        // $colomheader->setCellValue('L1', 'Jenis Kelamin');
+        // $colomheader->setCellValue('M1', 'Provinsi');
+        // $colomheader->setCellValue('N1', 'Kota');
+        // $colomheader->setCellValue('O1', 'Kelurahan');
+        // $colomheader->setCellValue('P1', 'Kecamatan');
+        // $colomheader->setCellValue('Q1', 'Kode Pos');
+
+        // // Add data to the worksheet
+        // $colomdata = 2;
+        // foreach ($data as $setuser) {
+        //     $colomheader->setCellValue('A' . $colomdata, ($colomdata - 1));
+        //     $colomheader->setCellValue('B' . $colomdata, $setuser['u_username']);
+        //     // $colomheader->setCellValue('C' . $colomdata, $password);
+        //     $colomheader->setCellValue('C' . $colomdata, $setuser['u_fullname']);
+        //     $colomheader->setCellValue('D' . $colomdata, $setuser['u_role']);
+        //     $referensi = $setuser['u_referensi'];
+        //     $id_provinsi = $setuser['u_provinsi'];
+        //     $id_kabupaten = $setuser['u_kota'];
+        //     $id_kecamatan = $setuser['u_kecamatan'];
+        //     foreach ($datauser as $data) {
+        //         if ($referensi == $data['u_id']) {
+        //             $colomheader->setCellValue('E' . $colomdata, $data['u_nama']);
+        //         }
+        //     }
+        //     $colomheader->setCellValue('F' . $colomdata, $setuser['u_email']);
+        //     $colomheader->setCellValue('G' . $colomdata, $setuser['u_create_at']);
+        //     $colomheader->setCellValue('H' . $colomdata, $setuser['u_nik']);
+        //     $colomheader->setCellValue('I' . $colomdata, $setuser['u_nama']);
+        //     $colomheader->setCellValue('J' . $colomdata, $setuser['u_tempat_lahir']);
+        //     $colomheader->setCellValue('K' . $colomdata, $setuser['u_tanggal_lahir']);
+        //     $colomheader->setCellValue('L' . $colomdata, $setuser['u_jenis_kelamin']);
+        //     foreach ($dataprovinsi as $data) {
+        //         if ($id_provinsi == $data['id_provinsi']) {
+        //             $colomheader->setCellValue('M' . $colomdata, $data['nama_provinsi']);
+        //         }
+        //     }
+        //     foreach ($datakabupaten as $data) {
+        //         if ($id_kabupaten == $data['id_kabupaten']) {
+        //             $colomheader->setCellValue('N' . $colomdata, $data['nama_kabupaten']);
+        //         }
+        //     }
+        //     foreach ($datakecamatan as $data) {
+        //         if ($id_kecamatan == $data['id_kecamatan']) {
+        //             $colomheader->setCellValue('O' . $colomdata, $data['nama_kecamatan']);
+        //         }
+        //     }
+        //     $colomheader->setCellValue('P' . $colomdata, $setuser['u_kelurahan']);
+        //     $colomheader->setCellValue('Q' . $colomdata, $setuser['u_kodepos']);
+        //     $colomdata++;
+        // }
+        // $colomheader->getStyle('A1:Q1')->getFont()->setBold(true);
+        // $colomheader->getStyle('A1:Q1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFFFFF00');
+        // $styleArray = [
+        //     'borders' => [
+        //         'allBorders' => [
+        //             'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+        //             'color' => ['argb' => 'FF000000'],
+        //         ],
+        //     ],
+        // ];
+        // $colomheader->getStyle('A1:Q' . ($colomdata - 1))->applyFromArray($styleArray);
+
+        // // $colomheader->getColumnDimension('A')->setAutoSize(true);
+        // $colomheader->getColumnDimension('B')->setAutoSize(true);
+        // $colomheader->getColumnDimension('C')->setAutoSize(true);
+        // $colomheader->getColumnDimension('D')->setAutoSize(true);
+        // $colomheader->getColumnDimension('E')->setAutoSize(true);
+        // $colomheader->getColumnDimension('F')->setAutoSize(true);
+        // $colomheader->getColumnDimension('G')->setAutoSize(true);
+        // $colomheader->getColumnDimension('H')->setAutoSize(true);
+        // $colomheader->getColumnDimension('I')->setAutoSize(true);
+        // $colomheader->getColumnDimension('J')->setAutoSize(true);
+        // $colomheader->getColumnDimension('K')->setAutoSize(true);
+        // $colomheader->getColumnDimension('L')->setAutoSize(true);
+        // $colomheader->getColumnDimension('M')->setAutoSize(true);
+        // $colomheader->getColumnDimension('N')->setAutoSize(true);
+        // $colomheader->getColumnDimension('O')->setAutoSize(true);
+        // $colomheader->getColumnDimension('P')->setAutoSize(true);
+        // $colomheader->getColumnDimension('Q')->setAutoSize(true);
+
+        // $writer = new Xlsx($spreadsheet);
+        // header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheet1.sheet');
+        // header('Content-Disposition: attachment;filename=Export-Data-User.xlsx');
+        // header('Cache-Control: max-age=0');
+        // $writer->save('php://output');
+        // exit();
+    }
     public function ExportDataExcelUser()
     {
         $user = new UsersModels();

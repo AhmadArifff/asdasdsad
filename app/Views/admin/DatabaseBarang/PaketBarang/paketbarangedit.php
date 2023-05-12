@@ -101,7 +101,7 @@
                                     </div>
                                     <div class="form-group ">
                                         <label for="">Foto Paket Barang</label>
-                                        <input type="file" name="p_foto" class="form-control" id="file" required accept=".jpg, .jpeg, .png" /></p>
+                                        <input type="file" name="p_foto" class="form-control" id="file" accept=".jpg, .jpeg, .png" /></p>
                                     </div>
                                     <div class="form-group">
                                         <label>Nama Item Barang</label>

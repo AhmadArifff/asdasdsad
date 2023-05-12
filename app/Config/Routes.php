@@ -67,6 +67,9 @@ $routes->group("admin", ["filter" => "auth"], function ($routes) {
     $routes->match(['get', 'post'], 'admincontrollers/importfileexceluser', 'AdminControllers::ImportFileExcelUser');
     $routes->get('admincontrollers/exportfileexceluser', 'AdminControllers::ExportDataExcelUser');
     $routes->get('admincontrollers/exporttemplatefileexceluser', 'AdminControllers::ExportTemplateDataExcelUser');
+    // Export By TGL
+    $routes->get('export-datauser-excel/(:any)(/(:any))', 'AdminControllers::ExportDataExcelUserByTGL/$1/$2');
+
     //Register Data Item Barang 
     $routes->get('databasebarang/dataitembarang', 'AdminControllers::listdataitembarang');
     $routes->get('databasebarang/itembarang', 'AdminControllers::itembarang');
@@ -137,7 +140,23 @@ $routes->group("admin", ["filter" => "auth"], function ($routes) {
     $routes->get('logout', 'LoginControllers::logout');
 });
 
-
+// Rest API Data User
+// $routes->resource('databaseuser/datauser/rest', ['controller' => 'RestApiCoordinator']); //sesuai controller mencangkup CRUD 
+$routes->get('databaseuser/datauser/rest', 'RestApiCoordinator::listdatauser');
+$routes->post('databaseuser/registeruser/process/rest', 'RestApiCoordinator::registeruserprocess');
+$routes->put('databaseuser/datauser/(:num)/edit/rest', 'RestApiCoordinator::edituser/$1');
+$routes->delete('databaseuser/datauser/(:num)/delete/rest', 'RestApiCoordinator::deleteuser/$1');
+// Rest API Data Transaksi
+$routes->get('datatransaksi/datatransaksi/rest', 'RestApiCoordinator::listdatatransaksi');
+$routes->post('datatransaksi/transaksi/process/rest', 'RestApiCoordinator::transaksiprocess');
+$routes->delete('datatransaksi/transaksi/(:num)/delete/rest', 'RestApiCoordinator::deletetransaksi/$1');
+// Rest API Data Transaksi Cicilan
+$routes->get('datatransaksi/cicilan/rest', 'RestApiCoordinator::listdatacicilan');
+$routes->delete('datatransaksi/cicilan/(:num)/delete/rest', 'RestApiCoordinator::deletecicilan/$1');
+// Rest API Data Transaksi Log Cicilan
+$routes->get('datatransaksi/datalogcicilan/rest', 'RestApiCoordinator::listdatalogcicilan');
+$routes->post('datatransaksi/logcicilan/process/rest', 'RestApiCoordinator::logcicilanprocess');
+$routes->delete('datatransaksi/logcicilan/(:num)/delete/rest', 'RestApiCoordinator::deletelogcicilan/$1');
 //coordinator Routes
 $routes->group("coordinator", ["filter" => "auth"], function ($routes) {
     $routes->get("dashboard", "CoordinatorControllers::index");

@@ -20,9 +20,9 @@
                         <h4>Data User</h4>
                         <div class="card-header-action">
                             <a href="<?= base_url(); ?>/admin/databaseuser/registeruser" class="btn btn-primary"><i class="fas fa-plus"></i> Tambah Data</a>
+                            <!-- <a href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a> -->
                             <!-- Export modal by tgl -->
-                            <!-- <a href="#" data-href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" onclick="confirmToExport(this)" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a> -->
-                            <a href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a>
+                            <a href="#" data-href="<?= base_url('admin/export-data-excel') ?>" onclick="confirmToExport(this)" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a>
                         </div>
                     </div>
                     <div class="card-body table-responsive">
@@ -125,7 +125,7 @@
 </div>
 
 <!-- Modal -->
-<!-- <div class="modal fade" id="confirm-dialog-export" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+<div class="modal fade" id="confirm-dialog-export" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">
             <div class="modal-header">
@@ -134,34 +134,43 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form method="post" action="<?= base_url('admin/admincontrollers/exportfileexceluser'); ?>">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label for="tanggal-awal" class="col-form-label">Tanggal Awal:</label>
-                        <input type="date" class="form-control" id="tanggal-awal" name="tanggal-awal">
-                    </div>
-                    <div class="form-group">
-                        <label for="tanggal-akhir" class="col-form-label">Tanggal Akhir:</label>
-                        <input type="date" class="form-control" id="tanggal-akhir" name="tanggal-akhir">
-                    </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="tanggal-awal" class="col-form-label">Tanggal Awal:</label>
+                    <input type="date" class="form-control" id="tanggal-awal" name="tanggal-awal">
                 </div>
-                <div class="modal-footer">
-                    <a href="#" role="button" id="export-button" class="btn btn-primary">Export</a>
-                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                <div class="form-group">
+                    <label for="tanggal-akhir" class="col-form-label">Tanggal Akhir:</label>
+                    <input type="date" class="form-control" id="tanggal-akhir" name="tanggal-akhir">
                 </div>
-            </form>
+            </div>
+            <div class="modal-footer">
+                <a href="#" role="button" id="export-button" class="btn btn-primary">Export</a>
+                <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+            </div>
         </div>
     </div>
-</div> -->
+</div>
 <script>
     function confirmToDelete(el) {
         $("#delete-button").attr("href", el.dataset.href);
         $("#confirm-dialog").modal('show');
     }
 
-    // function confirmToExport(el) {
-    //     $("#export-button").attr("href", el.dataset.href);
-    //     $("#confirm-dialog-export").modal('show');
-    // }
+    function confirmToExport(el) {
+        $("#export-button").attr("href", "<?= base_url('admin/export-data-excel') ?>/" + $("#tanggal-awal").val() + "/" + $("#tanggal-akhir").val());
+        $("#confirm-dialog-export").modal('show');
+    }
+
+
+    $("#export-button").on("click", function(e) {
+        e.preventDefault();
+        var tanggal_awal = $("#tanggal-awal").val();
+        var tanggal_akhir = $("#tanggal-akhir").val();
+        var url = $("#export-button").attr("href") + "/" + tanggal_awal + "/" + tanggal_akhir;
+        $("#export-link").attr("href", url);
+        $("#export-link")[0].click();
+        $("#confirm-dialog-export").modal('hide');
+    });
 </script>
 <?= $this->endSection() ?>
