@@ -23,6 +23,7 @@
                             <!-- <a href="<?= base_url('admin/admincontrollers/exportfileexceluser') ?>" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a> -->
                             <!-- Export modal by tgl -->
                             <a href="#" data-href="<?= base_url('admin/export-data-excel') ?>" onclick="confirmToExport(this)" class="btn btn-primary"><i class="fas fa-download"></i> Export Data</a>
+
                         </div>
                     </div>
                     <div class="card-body table-responsive">
@@ -157,20 +158,47 @@
         $("#confirm-dialog").modal('show');
     }
 
-    function confirmToExport(el) {
-        $("#export-button").attr("href", "<?= base_url('admin/export-data-excel') ?>/" + $("#tanggal-awal").val() + "/" + $("#tanggal-akhir").val());
-        $("#confirm-dialog-export").modal('show');
-    }
-
-
-    $("#export-button").on("click", function(e) {
-        e.preventDefault();
-        var tanggal_awal = $("#tanggal-awal").val();
-        var tanggal_akhir = $("#tanggal-akhir").val();
-        var url = $("#export-button").attr("href") + "/" + tanggal_awal + "/" + tanggal_akhir;
-        $("#export-link").attr("href", url);
-        $("#export-link")[0].click();
-        $("#confirm-dialog-export").modal('hide');
-    });
+    // function confirmToExport(el) {
+    //     $("#export-button").attr("href", el.dataset.href);
+    //     $("#confirm-dialog-export").modal('show');
+    // }
 </script>
+<script>
+    function confirmToExport(link) {
+        $('#confirm-dialog-export').modal('show');
+
+        $('#export-button').on('click', function() {
+            var tanggalAwal = $('#tanggal-awal').val();
+            var tanggalAkhir = $('#tanggal-akhir').val();
+
+            var url = link.getAttribute('data-href');
+
+            $.ajax({
+                url: url,
+                method: 'POST',
+                data: {
+                    'tanggal-awal': tanggalAwal,
+                    'tanggal-akhir': tanggalAkhir
+                },
+                success: function(response) {
+                    // handle success response
+                },
+                error: function(xhr) {
+                    // handle error response
+                }
+            }).done(function() {
+                $('#confirm-dialog-export').modal('hide');
+
+                // tampilkan pesan sukses
+                // atau redirect ke halaman lain
+            }).fail(function() {
+                $('#confirm-dialog-export').modal('hide');
+
+                // tampilkan pesan error
+                // atau lakukan sesuai kebutuhan
+            });
+        });
+    }
+</script>
+
 <?= $this->endSection() ?>

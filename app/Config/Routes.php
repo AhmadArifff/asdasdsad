@@ -68,7 +68,9 @@ $routes->group("admin", ["filter" => "auth"], function ($routes) {
     $routes->get('admincontrollers/exportfileexceluser', 'AdminControllers::ExportDataExcelUser');
     $routes->get('admincontrollers/exporttemplatefileexceluser', 'AdminControllers::ExportTemplateDataExcelUser');
     // Export By TGL
-    $routes->get('export-datauser-excel/(:any)(/(:any))', 'AdminControllers::ExportDataExcelUserByTGL/$1/$2');
+    $routes->post('export-data-excel', 'AdminControllers::exportDataExcelUserByTGL');
+    // $routes->post('admin/export-data-excel', 'AdminControllers::exportDataExcel');
+
 
     //Register Data Item Barang 
     $routes->get('databasebarang/dataitembarang', 'AdminControllers::listdataitembarang');
@@ -136,6 +138,7 @@ $routes->group("admin", ["filter" => "auth"], function ($routes) {
     $routes->get('admincontrollers/exportfileexcellogcicilan', 'AdminControllers::ExportDataExcellogcicilan');
     $routes->add('datalogcicilan/approvedlogcicilan/(:segment)/approved', 'AdminControllers::editapprovedlogcicilan/$1');
     $routes->add('datalogcicilan/noapprovedlogcicilan/(:segment)/noapproved', 'AdminControllers::editnoapprovedlogcicilan/$1');
+    $routes->add('alert/(:segment)/delete', 'AdminControllers::alertdelete/$1');
     //logout
     $routes->get('logout', 'LoginControllers::logout');
 });

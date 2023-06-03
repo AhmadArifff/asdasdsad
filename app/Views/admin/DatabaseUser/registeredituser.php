@@ -139,12 +139,12 @@
                                 <!-- <input id="frist_name" type="radio" class="form-control" name="u_jenis_kelamin" placeholder="Masukan Username">Laki-laki -->
                                 <div class="selectgroup selectgroup-pills">
                                     <label class="selectgroup-item">
-                                        <input type="radio" name="u_jenis_kelamin" value="Laki-laki" class="selectgroup-input" required>
+                                        <input type="radio" name="u_jenis_kelamin" value="Laki-laki" class="selectgroup-input" <?= $tb_user['u_jenis_kelamin'] == 'Laki-laki' ? 'checked' : '' ?>required>
                                         <span class="selectgroup-button selectgroup-button-icon"><i class="fas fa-male"></i></span>
                                     </label>
                                     <label style="margin-right: 10%;">Laki-laki</label>
                                     <label class="selectgroup-item">
-                                        <input type="radio" name="u_jenis_kelamin" value="Perempuan" class="selectgroup-input" required>
+                                        <input type="radio" name="u_jenis_kelamin" value="Perempuan" class="selectgroup-input" <?= $tb_user['u_jenis_kelamin'] == 'Perempuan' ? 'checked' : '' ?> required>
                                         <span class="selectgroup-button selectgroup-button-icon"><i class="fas fa-female"></i></span>
                                     </label>
                                     <label>Perempuan</label>

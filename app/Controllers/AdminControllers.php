@@ -158,10 +158,32 @@ class AdminControllers extends BaseController
             // echo "value=" . $H['pa_harga'] . ">";
         }
     }
+    public function alertdelete($c_id)
+    {
+        $logcicilan = new LogCicilanModels();
+        $logsementaracicilan = new LogCicilanSementaraModels();
+        // $logcicilanfoto = $logcicilan->datalogcicilan($l_id);
+        $logcicilan->deletelogcicilan_c_id_sementara($c_id);
+        $logcicilanfotosementara = $logsementaracicilan->datalogcicilan_c_id($c_id);
+        foreach ($logcicilanfotosementara as $item) {
+            if (!empty($item['l_foto'])) {
+                unlink('foto-bukti-pembayaran/' . $item['l_foto']);
+            }
+        }
+        $logsementaracicilan->deletelogcicilan_c_id_sementara($c_id);
+        session()->setFlashdata('success', 'Data Berhasil Dihapus!');
+        return redirect()->back();
+    }
     public function index()
     {
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
+        $datacicilan = $cicilan->findAll();
+        foreach ($datacicilan as $key => $tb_cicilan) {
+            $c_id = $tb_cicilan['c_id']; // Menggunakan panah (->) untuk mengakses properti objek
+        }
         $menu = [
             'AdminDashboard' => 'dashboard',
             'RegisterUser' => '',
@@ -185,6 +207,10 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
+            // 'AlertLogCicilan' => $cicilan->getdatalogcicilan_by_c_id($c_id),
+            'AlertCicilan' => $cicilan->findAll(),
+            // 'AlertLogCicilan' => $logciciclan->findAll(),
+            'AlertLogCicilan' => $logciciclan->getlogcicilan_by_c_id($c_id),
             // 'countdatauser' => $UsersModels->countAllResults(),
         ];
         return view('admin/dashboard', $menu);
@@ -194,6 +220,8 @@ class AdminControllers extends BaseController
     {
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => 'registeruser',
@@ -220,7 +248,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         helper(['form', 'url']);
         $data['nameuser'] = $UsersModels->getuserreferensiadmin();
@@ -392,6 +421,8 @@ class AdminControllers extends BaseController
     {
         $transaksi = new TransaksiModels();
         $UsersModels = new UsersModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => 'registeruser',
@@ -419,7 +450,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_user'] = $UsersModels->findAll();
         echo view('admin/DatabaseUser/datauser', $data);
@@ -436,6 +468,8 @@ class AdminControllers extends BaseController
     {
         $transaksi = new TransaksiModels();
         $UsersModels = new UsersModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => 'registeruser',
@@ -463,7 +497,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 
@@ -757,23 +792,25 @@ class AdminControllers extends BaseController
     //     $writer->save('php://output');
     //     exit();
     // }
-    public function ExportDataExcelUserByTGL($startDate = null, $endDate = null)
+    public function ExportDataExcelUserByTGL()
     {
         // Load required classes
+        $tanggal_awal = $this->request->getVar('tanggal-awal');
+        $tanggal_akhir = $this->request->getVar('tanggal-akhir');
         $db = db_connect();
         $builder = $db->table('tb_user');
 
         // Set default value for start and end date
-        if ($startDate === null) {
-            $startDate = date('Y-m-d', strtotime('-7 days'));
+        if ($tanggal_awal === null) {
+            $tanggal_awal = date('Y-m-d', strtotime('-7 days'));
         }
-        if ($endDate === null) {
-            $endDate = date('Y-m-d');
+        if ($tanggal_akhir === null) {
+            $tanggal_akhir = date('Y-m-d');
         }
 
         // Query data from database
         $query = $builder->select('*')
-            ->where('DATE(u_create_at) BETWEEN "' . date('Y-m-d', strtotime($startDate)) . '" AND "' . date('Y-m-d', strtotime($endDate)) . '"')
+            ->where('DATE(u_create_at) BETWEEN "' . date('Y-m-d', strtotime($tanggal_awal)) . '" AND "' . date('Y-m-d', strtotime($tanggal_akhir)) . '"')
             ->get();
         $data = $query->getResultArray();
 
@@ -795,13 +832,12 @@ class AdminControllers extends BaseController
             $i++;
         }
 
-        // Set headers to download the file rather than displayed
-        header('Content-Type: application/vnd.ms-excel');
-        header('Content-Disposition: attachment; filename="data_excel.xlsx"');
-
-        // Write the Excel file to output stream
         $writer = new Xlsx($spreadsheet);
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheet1.sheet');
+        header('Content-Disposition: attachment;filename=Export-Data-User.xlsx');
+        header('Cache-Control: max-age=0');
         $writer->save('php://output');
+        exit();
         // Load the Excel library
         // $user = new UsersModels();
         // $datauser = $user->findAll();
@@ -913,6 +949,9 @@ class AdminControllers extends BaseController
         // $writer->save('php://output');
         // exit();
     }
+
+
+
     public function ExportDataExcelUser()
     {
         $user = new UsersModels();
@@ -1094,6 +1133,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $itembarang = new DataItemBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1117,7 +1158,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
 
         ];
         return view('admin/DatabaseBarang/DataItemBarang/itembarang', $data);
@@ -1172,6 +1214,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $itembarang = new DataItemBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1195,7 +1239,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_item_barang'] = $itembarang->findAll();
         echo view('admin/DatabaseBarang/DataItemBarang/dataitembarang', $data);
@@ -1209,6 +1254,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $itembarang = new DataItemBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1232,7 +1279,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 
@@ -1422,6 +1470,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $packingbarang = new PackingBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1445,7 +1495,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         return view('admin/DatabaseBarang/PackagingBarang/packingbarang', $data);
         // return view('register');
@@ -1492,6 +1543,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $packingbarang = new PackingBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1515,6 +1568,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_packaging'] = $packingbarang->findAll();
         echo view('admin/DatabaseBarang/PackagingBarang/datapackingbarang', $data);
@@ -1528,6 +1583,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $packingbarang = new PackingBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1551,7 +1608,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 
@@ -1765,6 +1823,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $paketbarang = new PaketBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1791,7 +1851,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         return view('admin/DatabaseBarang/PaketBarang/paketbarang', $data);
         // return view('register');
@@ -1913,6 +1974,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $paketbarang = new PaketBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1940,7 +2003,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_paket'] = $paketbarang->findAll();
         echo view('admin/DatabaseBarang/PaketBarang/datapaketbarang', $data);
@@ -1955,6 +2019,8 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         $paketbarang = new PaketBarangModels();
         $pp_barang = new PengambilanPaketBarangModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -1982,7 +2048,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 
@@ -2239,6 +2306,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $periodepembayaran = new PeriodePembayaranModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2262,7 +2331,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         return view('admin/DataTransaksi/PeriodePembayaran/periodepembayaran', $data);
         // return view('register');
@@ -2290,6 +2360,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $periodepembayaran = new PeriodePembayaranModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2313,7 +2385,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_pay_periode'] = $periodepembayaran->findAll();
         echo view('admin/DataTransaksi/PeriodePembayaran/dataperiodepembayaran', $data);
@@ -2327,6 +2400,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $periodepembayaran = new PeriodePembayaranModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2350,7 +2425,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 
@@ -2498,6 +2574,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $paketbarang = new PaketBarangModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2524,7 +2602,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         return view('admin/DataTransaksi/TransaksiPaket/transaksi', $data);
         // return view('register');
@@ -2611,6 +2690,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $paketbarang = new PaketBarangModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2637,7 +2718,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
 
         ];
         $data['tb_transaksi'] = $transaksi->findAll();
@@ -2651,6 +2733,8 @@ class AdminControllers extends BaseController
     {
         $paketbarang = new PaketBarangModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2670,7 +2754,8 @@ class AdminControllers extends BaseController
             'payperiode' => $paketbarang->datapayperiode(),
             'DataTransaksiCicilan' => '',
             'DataTransaksiLogCicilan' => '',
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
 
         ];
         $data['tb_transaksi'] = $transaksi->findAll();
@@ -2721,6 +2806,8 @@ class AdminControllers extends BaseController
     {
         $paketbarang = new PaketBarangModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2740,7 +2827,8 @@ class AdminControllers extends BaseController
             'payperiode' => $paketbarang->datapayperiode(),
             'DataTransaksiCicilan' => '',
             'DataTransaksiLogCicilan' => '',
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_transaksi'] = $transaksi->findAll();
         if ($t_id != null) {
@@ -2778,6 +2866,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $paketbarang = new PaketBarangModels();
         $transaksi = new TransaksiModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -2804,7 +2894,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 
@@ -3135,6 +3226,7 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         $paketbarang = new PaketBarangModels();
         $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3162,7 +3254,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         return view('admin/DataTransaksi/TransaksiCicilan/cicilan', $data);
         // return view('register');
@@ -3217,6 +3310,11 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         $paketbarang = new PaketBarangModels();
         $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
+        $datacicilan = $cicilan->findAll();
+        foreach ($datacicilan as $key => $tb_cicilan) {
+            $c_id = $tb_cicilan['c_id']; // Menggunakan panah (->) untuk mengakses properti objek
+        }
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3244,6 +3342,9 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
+            'AlertCicilan' => $cicilan->findAll(),
+            // 'AlertLogCicilan' => $logciciclan->findAll(),
+            // 'AlertLogCicilan' => $logciciclan->getlogcicilan_by_c_id($c_id),
         ];
         $data['tb_cicilan'] = $cicilan->findAll();
         echo view('admin/DataTransaksi/TransaksiCicilan/datacicilan', $data);
@@ -3258,6 +3359,7 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         $paketbarang = new PaketBarangModels();
         $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3541,6 +3643,8 @@ class AdminControllers extends BaseController
         $UsersModels = new UsersModels();
         $transaksi = new TransaksiModels();
         $logcicilan = new LogCicilanModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3565,7 +3669,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         return view('admin/DataTransaksi/TransaksiLogCicilan/logcicilan', $data);
         // return view('register');
@@ -3638,6 +3743,8 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         // $logcicilan = new LogCicilanModels();
         $logcicilan = new LogCicilanSementaraModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3662,6 +3769,9 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_log_cicilan'] = $logcicilan->findAll();
         echo view('admin/DataTransaksi/TransaksiLogCicilan/datalogcicilan', $data);
@@ -3677,6 +3787,7 @@ class AdminControllers extends BaseController
         $logcicilan = new LogCicilanModels();
         $cicilan = new CicilanModels();
         $logcicilansementara = new LogCicilanSementaraModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3696,7 +3807,8 @@ class AdminControllers extends BaseController
             'payperiode' => $paketbarang->datapayperiode(),
             'DataTransaksiCicilan' => '',
             'DataTransaksiLogCicilan' => '',
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
 
         ];
         $current_time = time();
@@ -3747,6 +3859,8 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         $logcicilan = new LogCicilanModels();
         $logcicilansementara = new LogCicilanSementaraModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3766,7 +3880,8 @@ class AdminControllers extends BaseController
             'payperiode' => $paketbarang->datapayperiode(),
             'DataTransaksiCicilan' => '',
             'DataTransaksiLogCicilan' => '',
-
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         $data['tb_transaksi'] = $transaksi->findAll();
         $current_time = time();
@@ -3810,6 +3925,8 @@ class AdminControllers extends BaseController
         $transaksi = new TransaksiModels();
         $logcicilan = new LogCicilanModels();
         // $logcicilan = new LogCicilanModels();
+        $cicilan = new CicilanModels();
+        $logciciclan = new LogCicilanModels();
         $data = [
             'AdminDashboard' => '',
             'RegisterUser' => '',
@@ -3834,6 +3951,8 @@ class AdminControllers extends BaseController
             'NotipDataPeriode' => $transaksi->get_dataperiode(),
             'NotipDataUser' => $UsersModels->findAll(),
             'NotipDataPaket' => $transaksi->datapaket(),
+            'AlertCicilan' => $cicilan->findAll(),
+            'AlertLogCicilan' => $logciciclan->findAll(),
         ];
         // ambil artikel yang akan diedit
 

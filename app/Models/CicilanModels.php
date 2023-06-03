@@ -113,4 +113,8 @@ class CicilanModels extends Model
         $query = $this->db->query('SELECT COUNT(*) FROM tb_cicilan WHERE t_id = ?', [$t_id]);
         return $query->getResult();
     }
+    public function getdatalogcicilan_by_c_id($c_id)
+    {
+        return $this->db->table('tb_log_cicilan')->where('c_id', $c_id)->Get()->getResultArray();
+    }
 }

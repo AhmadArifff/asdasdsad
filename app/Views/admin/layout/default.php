@@ -86,9 +86,9 @@
                 <form class="form-inline mr-auto">
                     <ul class="navbar-nav mr-3">
                         <li><a href="#" data-toggle="sidebar" class="nav-link nav-link-lg"><i class="fas fa-bars"></i></a></li>
-                        <li><a href="#" data-toggle="search" class="nav-link nav-link-lg d-sm-none"><i class="fas fa-search"></i></a></li>
+                        <!-- <li><a href="#" data-toggle="search" class="nav-link nav-link-lg d-sm-none"><i class="fas fa-search"></i></a></li> -->
                     </ul>
-                    <div class="search-element">
+                    <!-- <div class="search-element">
                         <input class="form-control" type="search" placeholder="Search" aria-label="Search" data-width="250">
                         <button class="btn" type="submit"><i class="fas fa-search"></i></button>
                         <div class="search-backdrop"></div>
@@ -149,17 +149,17 @@
                                 </a>
                             </div>
                         </div>
-                    </div>
+                    </div> -->
                 </form>
                 <ul class="navbar-nav navbar-right">
-                    <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown" class="nav-link nav-link-lg message-toggle beep"><i class="far fa-envelope"></i></a>
+                    <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg beep"><i class="far fa-envelope"></i></a>
                         <div class="dropdown-menu dropdown-list dropdown-menu-right">
                             <div class="dropdown-header">Messages
                                 <div class="float-right">
-                                    <a href="#">Mark All As Read</a>
+                                    <!-- <a href="#">Mark All As Read</a> -->
                                 </div>
                             </div>
-                            <div class="dropdown-list-content dropdown-list-message">
+                            <div class="dropdown-list-content dropdown-list-icons">
                                 <!-- <a href="#" class="dropdown-item dropdown-item-unread">
                                     <div class="dropdown-item-avatar">
                                         <img alt="image" src="<?= base_url() ?>/assets/img/avatar/avatar-1.png" class="rounded-circle">
@@ -211,19 +211,111 @@
                                         <p>Exercitation ullamco laboris nisi ut aliquip ex ea commodo</p>
                                         <div class="time">Yesterday</div>
                                     </div>
-                                </a>
+                                </a> -->
+                                <?php
+                                $current_time = time();
+                                foreach ($AlertCicilan as $tb_cicilan) {
+                                    $c_id = $tb_cicilan['c_id'];
+
+                                    // Query untuk mengambil data paling bawah berdasarkan created_at
+                                    $hostname = 'localhost';
+                                    $username = 'root';
+                                    $password = '';
+                                    $database = 'arisya';
+
+                                    $connection = mysqli_connect($hostname, $username, $password, $database);
+
+                                    // Check if the connection was successful
+                                    if (!$connection) {
+                                        die('Failed to connect to MySQL: ' . mysqli_connect_error());
+                                    }
+
+                                    $query = "SELECT * FROM tb_log_cicilan WHERE c_id = '$c_id' ORDER BY created_at DESC LIMIT 1";
+                                    $result = mysqli_query($connection, $query);
+
+                                    if (mysqli_num_rows($result) > 0) {
+                                        $tb_log_cicilan = mysqli_fetch_assoc($result);
+                                        // if ($tb_cicilan['c_total_biaya'] == $tb_cicilan['c_biaya_masuk']) {
+                                        $u_created_at = $tb_log_cicilan['created_at'];
+                                        $waktulogcicilan = $current_time - strtotime($u_created_at);
+                                        $alerthari = floor($waktulogcicilan / (3600 * 24));
+                                        $jam = floor(($waktulogcicilan % (3600 * 24)) / 3600);
+                                        $menit = floor(($waktulogcicilan % 3600) / 60);
+                                        // Tampilkan Data
+                                        foreach ($NotipDataUser as $tb_user) {
+                                            if ($tb_log_cicilan['u_id'] == $tb_user['u_id']) {
+                                                $c_id_log_cicilan = $tb_log_cicilan['c_id'];
+                                                if ($c_id == $c_id_log_cicilan) {
+                                                    $p_id = $tb_cicilan['p_id'];
+                                                    $pe_id = $tb_cicilan['pe_id'];
+                                                    foreach ($NotipDataPeriode as $tb_pay_periode) {
+                                                        if ($pe_id == $tb_pay_periode['pe_id']) {
+                                                            $pe_periode = $tb_pay_periode['pe_periode'];
+                                                            foreach ($NotipDataPaket as $tb_paket) {
+                                                                if ($p_id == $tb_paket['p_id']) {
+                                                                    $tampil =  strtoupper('<b style="font-weight: bold; font-size: 13px;">' . $tb_user['u_nama']) . '</b> yang mengambil paket <b style="font-weight: bold; font-size: 13px;">' . $tb_paket['p_nama'] . '</b>, dengan jumlah bayar setoran sebesar Rp. <b style="font-weight: bold; font-size: 13px;">' .  number_format($tb_paket['p_setoran'], 2, ',', '.')  . '</b> sisa periode pembayaran cicilan sebanyak  <b style="font-weight: bold; font-size: 13px;">' . $tb_cicilan['c_cicilan_outstanding'] . '</b> <b style="font-weight: bold; font-size: 13px;">' . $tb_pay_periode['pe_nama'] . "</b> telah menunggak selama " . '<b style="font-weight: bold; font-size: 13px;">' . $alerthari . strtoupper(' hari</b>');
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        if ($alerthari >=  28 && $alerthari <= 30) { ?>
+                                            <div class="dropdown-item">
+                                                <div class="dropdown-item-icon bg-warning text-white">
+                                                    <i class="fas fa-exclamation-triangle bg-warning"></i>
+                                                </div>
+                                                <div class="dropdown-item-desc">
+                                                    <?= $tampil ?>
+                                                    <div class="time"><?= $alerthari . " hari." . $jam . " jam," . $menit . " menit yang lalu" . $tb_log_cicilan['l_id'] ?></div>
+                                                </div>
+                                            </div>
+                                        <?php
+                                        } else if ($alerthari >= 30 && $alerthari <= 60) { ?>
+                                            <div class="dropdown-item">
+                                                <div class="dropdown-item-icon bg-danger text-white">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div class="dropdown-item-desc">
+                                                    <?= $tampil ?>
+                                                    <div class="time"><?= $alerthari . " hari." . $jam . " jam," . $menit . " menit yang lalu" . $tb_log_cicilan['l_id'] ?></div>
+                                                </div>
+                                            </div>
+                                        <?php
+                                        } else if ($alerthari >= 60 && $alerthari <= 90) { ?>
+                                            <div class="dropdown-item">
+                                                <div class="dropdown-item-icon bg-light text-white">
+                                                    <i class="fas fa-exclamation-triangle"></i>
+                                                </div>
+                                                <div class="dropdown-item-desc">
+                                                    <?= $tampil ?>
+                                                    <div class="time"><a href="#" data-href="<?= base_url('admin/alert/' . $tb_log_cicilan['c_id'] . '/delete') ?>" onclick="confirmToDeletenAlert(this)" class="btn btn-danger btn-sm" disabled>Stop Cicilan</a></div>
+                                                    <div class="time"><?= $alerthari . " hari." . $jam . " jam," . $menit . " menit yang lalu" . $tb_log_cicilan['l_id'] ?></div>
+                                                </div>
+                                            </div>
+                                <?php
+                                        }
+                                    }
+                                }
+                                // }
+                                ?>
+
+
+
+
                             </div>
                             <div class="dropdown-footer text-center">
                                 <a href="#">View All <i class="fas fa-chevron-right"></i></a>
-                            </div> -->
                             </div>
+                        </div>
                     </li>
                     <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown" class="nav-link notification-toggle nav-link-lg beep"><i class="far fa-bell"></i></a>
                         <div class="dropdown-menu dropdown-list dropdown-menu-right">
                             <div class="dropdown-header">Notifications
-                                <div class="float-right">
+                                <!-- <div class="float-right">
                                     <a href="#">Mark All As Read</a>
-                                </div>
+                                </div> -->
                             </div>
                             <div class="dropdown-list-content dropdown-list-icons">
                                 <!-- <a href="#" class="dropdown-item dropdown-item-unread">
@@ -258,7 +350,8 @@
                                 foreach ($NotipDataTransaksi as $tb_transaksi) {
                                     $transaksi_time = strtotime($tb_transaksi['waktu']);
                                     $waktu = $current_time - strtotime($tb_transaksi['waktu']);
-                                    $jam = floor($waktu / 3600);
+                                    $hari = floor($waktu / (3600 * 24));
+                                    $jam = floor(($waktu % (3600 * 24)) / 3600);
                                     $menit = floor(($waktu % 3600) / 60);
                                     $approved = $tb_transaksi['t_approval_by'];
                                     if ($approved == null) { ?>
@@ -281,7 +374,8 @@
                                                             }
                                                         } ?>
                                                         <div class="time"><a href="<?= base_url('admin/datatransaksi/noapprovedtransaksi/' . $tb_transaksi['t_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a></div>
-                                                        <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                        <div class="time"><?= $hari . " hari, " . $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+
                                                     </div>
                                                 <?php }
                                             } else { ?>
@@ -299,7 +393,8 @@
                                                         }
                                                     } ?>
                                                     <a href="#" data-href="<?= base_url('admin/datatransaksi/approvedtransaksi/' . $tb_transaksi['t_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
-                                                    <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                    <div class="time"><?= $hari . " hari, " . $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+
                                                 </div>
                                             <?php } ?>
                                         </div>
@@ -312,7 +407,8 @@
                                     // foreach ($NotipDataLogcicilan as $tb_log_cicilan) {
                                     $transaksi_time = strtotime($tb_log_cicilan_sementara['created_at']);
                                     $waktu = $current_time - strtotime($tb_log_cicilan_sementara['created_at']);
-                                    $jam = floor($waktu / 3600);
+                                    $hari = floor($waktu / (3600 * 24));
+                                    $jam = floor(($waktu % (3600 * 24)) / 3600);
                                     $menit = floor(($waktu % 3600) / 60);
                                     $approvedsementara = $tb_log_cicilan_sementara['l_approval_by'];
                                     if ($approvedsementara == null) { ?>
@@ -350,7 +446,7 @@
                                                         } ?>
 
                                                         <div class="time"><a href="<?= base_url('admin/datalogcicilan/noapprovedlogcicilan/' . $tb_log_cicilan_sementara['l_id'] . '/noapproved') ?>" class="btn btn-primary btn-sm" disabled>Telah Disetujui</a></div>
-                                                        <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                        <div class="time"><?= $hari . " hari," . $jam . " jam," . $menit . " menit yang lalu" ?></div>
                                                     </div>
                                                 <?php
                                                 }
@@ -381,7 +477,7 @@
                                                         }
                                                     } ?>
                                                     <a href="#" data-href="<?= base_url('admin/datalogcicilan/approvedlogcicilan/' . $tb_log_cicilan_sementara['l_id'] . '/approved') ?>" onclick="confirmToApproved(this)" class="btn btn-warning btn-sm">Belum Disetujui</a>
-                                                    <div class="time"><?= $jam . " jam, " . $menit . " menit yang lalu" ?></div>
+                                                    <div class="time"><?= $hari . " hari," . $jam . " jam," . $menit . " menit yang lalu" ?></div>
                                                 </div>
                                             <?php } ?>
                                         </div>
@@ -522,10 +618,29 @@
             </div>
         </div>
     </div>
+    <div id="confirm-dialog-alert-delete" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-body">
+                    <h4 class="h4">Apa kamu akan menghapus data ini?</h4>
+                    <p>Data akan delete selamanya....</p>
+                </div>
+                <div class="modal-footer">
+                    <a href="#" role="button" id="alert-delete" class="btn btn-primary">Delete</a>
+                    <button type="button" class="btn btn-warning" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript">
         function confirmToApproved(el) {
             $("#approved-button").attr("href", el.dataset.href);
             $("#confirm-dialog-approved").modal('show');
+        }
+
+        function confirmToDeletenAlert(el) {
+            $("#alert-delete").attr("href", el.dataset.href);
+            $("#confirm-dialog-alert-delete").modal('show');
         }
 
         $(document).ready(function() {

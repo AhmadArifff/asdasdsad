@@ -68,4 +68,16 @@ class LogCicilanModels extends Model
         $query = $this->db->query('DELETE FROM tb_log_cicilan WHERE l_id_sementara = ?', [$l_id]);
         return $query;
     }
+    public function deletelogcicilan_c_id_sementara($c_id)
+    {
+        $query = $this->db->query('DELETE FROM tb_log_cicilan WHERE c_id = ?', [$c_id]);
+        return $query;
+    }
+    public function getlogcicilan_by_c_id($c_id)
+    {
+        $query = $this->db->query('SELECT * FROM tb_log_cicilan WHERE c_id = ? ORDER BY created_at DESC LIMIT 1', [$c_id]);
+        $result = $query->getRow();
+        // return $query->getResultArray();
+        return $result;
+    }
 }

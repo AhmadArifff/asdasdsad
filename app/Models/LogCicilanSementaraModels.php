@@ -56,4 +56,13 @@ class LogCicilanSementaraModels extends Model
     {
         return $this->db->table('tb_log_cicilan_sementara')->where('l_id', $l_id)->Get()->getRowArray();
     }
+    public function datalogcicilan_c_id($c_id)
+    {
+        return $this->db->table('tb_log_cicilan_sementara')->where('c_id', $c_id)->Get()->getRowArray();
+    }
+    public function deletelogcicilan_c_id_sementara($c_id)
+    {
+        $query = $this->db->query('DELETE FROM tb_log_cicilan_sementara WHERE c_id = ?', [$c_id]);
+        return $query;
+    }
 }
